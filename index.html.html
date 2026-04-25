@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ÆSTHETIC ARCHIVE — Digital Design Studies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;700;800&family=Fragment+Mono&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,600&display=swap" rel="stylesheet">
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root{
+  --bg:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;--surface:#1e1e1e;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.15);
+  --text:#f0ede8;--text2:#a09a92;--text3:#5c5852;
+  --red:#d4431a;--yellow:#e8c547;--cyan:#4affef;--blue:#1a6ef5;--green:#2dd67a;--purple:#9b59ff;
+  --font-display:'Bebas Neue',sans-serif;
+  --font-body:'Space Grotesk',sans-serif;
+  --font-mono:'DM Mono',monospace;
+  --font-serif:'Playfair Display',serif;
+  --font-syne:'Syne',sans-serif;
+  --font-fmono:'Fragment Mono',monospace;
+  --font-corm:'Cormorant Garamond',serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --ease2:cubic-bezier(.4,0,.2,1);
+  --grain-opacity:.045;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.6;overflow-x:hidden;cursor:none}
+
+/* GRAIN */
+body::before{content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-size:180px;opacity:var(--grain-opacity);pointer-events:none;z-index:9999;mix-blend-mode:overlay}
+
+/* CURSOR */
+#cursor{position:fixed;width:10px;height:10px;background:#f0ede8;border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:width .3s var(--ease),height .3s var(--ease),background .3s;mix-blend-mode:difference}
+#cursor-ring{position:fixed;width:38px;height:38px;border:1px solid rgba(240,237,232,.5);border-radius:50%;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:width .4s var(--ease),height .4s var(--ease),opacity .4s,border-color .3s}
+body.cursor-hover #cursor{width:16px;height:16px}
+body.cursor-hover #cursor-ring{width:56px;height:56px;border-color:rgba(240,237,232,.8)}
+body.cursor-link #cursor{background:var(--red);width:20px;height:20px}
+body.cursor-link #cursor-ring{border-color:var(--red);width:64px;height:64px}
+
+::-webkit-scrollbar{width:2px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--text3)}
+
+/* PROGRESS BAR */
+#progress{position:fixed;top:0;left:0;height:2px;background:var(--red);z-index:10000;transform-origin:left;transform:scaleX(0);transition:transform .1s linear}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:20px 40px;display:flex;align-items:center;justify-content:space-between;transition:padding .4s var(--ease),background .4s}
+nav.scrolled{background:rgba(10,10,10,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:14px 40px;border-bottom:1px solid var(--border)}
+.nav-logo{font-family:var(--font-display);font-size:22px;letter-spacing:.12em;color:var(--text);text-decoration:none;cursor:none}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;color:var(--text2);text-decoration:none;cursor:none;transition:color .3s;text-transform:uppercase}
+.nav-links a:hover{color:var(--text)}
+.nav-menu-btn{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:none;padding:4px}
+.nav-menu-btn span{display:block;width:24px;height:1px;background:var(--text);transition:transform .3s var(--ease),opacity .3s}
+.nav-menu-btn.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.nav-menu-btn.open span:nth-child(2){opacity:0}
+.nav-menu-btn.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+.mobile-nav{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;opacity:0;pointer-events:none;transition:opacity .4s var(--ease)}
+.mobile-nav.open{opacity:1;pointer-events:all}
+.mobile-nav a{font-family:var(--font-display);font-size:clamp(32px,7vw,70px);color:var(--text);text-decoration:none;letter-spacing:.06em;cursor:none;transition:color .3s}
+.mobile-nav a:hover{color:var(--text3)}
+
+/* HERO */
+#hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 40px 60px;position:relative;overflow:hidden}
+.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(to right,rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,.03) 1px,transparent 1px);background-size:80px 80px;pointer-events:none}
+.hero-glow{position:absolute;top:-200px;right:-200px;width:700px;height:700px;background:radial-gradient(circle,rgba(212,67,26,.08) 0%,transparent 70%);pointer-events:none;animation:breathe 8s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.2);opacity:1}}
+.hero-eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.25em;color:var(--red);text-transform:uppercase;margin-bottom:24px;opacity:0;transform:translateY(20px);animation:fadeUp 1s var(--ease) .3s forwards}
+.hero-title{font-family:var(--font-display);font-size:clamp(80px,14vw,220px);line-height:.88;letter-spacing:-.01em;color:var(--text);overflow:hidden}
+.hero-title .line{display:block;opacity:0;transform:translateY(110%)}
+.hero-title .line:nth-child(1){animation:slideUp .9s var(--ease) .1s forwards}
+.hero-title .line:nth-child(2){animation:slideUp .9s var(--ease) .25s forwards;color:var(--text3)}
+.hero-title .line:nth-child(3){animation:slideUp .9s var(--ease) .4s forwards}
+@keyframes slideUp{to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+.hero-sub-row{display:flex;align-items:flex-end;justify-content:space-between;margin-top:48px;gap:20px;opacity:0;animation:fadeUp 1s var(--ease) .8s forwards}
+.hero-desc{max-width:360px;font-size:14px;color:var(--text2);line-height:1.7;font-weight:300}
+.hero-scroll-hint{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--text3);text-transform:uppercase;display:flex;align-items:center;gap:12px;white-space:nowrap}
+.hero-scroll-hint::before{content:'';display:block;width:40px;height:1px;background:var(--text3);animation:scrollPulse 2s ease-in-out infinite}
+@keyframes scrollPulse{0%,100%{width:40px;opacity:1}50%{width:60px;opacity:.5}}
+
+/* MARQUEE */
+.marquee-wrap{overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 0;background:var(--bg2)}
+.marquee-track{display:flex;white-space:nowrap;animation:marquee 35s linear infinite}
+.marquee-track:hover{animation-play-state:paused}
+.marquee-item{font-family:var(--font-display);font-size:13px;letter-spacing:.3em;color:var(--text3);text-transform:uppercase;padding:0 48px;display:inline-flex;align-items:center;gap:48px}
+.marquee-item::after{content:'✦';font-size:8px;color:var(--red)}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* SHARED SECTIONS */
+.section-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.3em;color:var(--red);text-transform:uppercase;margin-bottom:32px;display:flex;align-items:center;gap:16px}
+.section-label::before{content:'';display:inline-block;width:24px;height:1px;background:var(--red)}
+.section-title{font-family:var(--font-display);font-size:clamp(40px,6vw,80px);letter-spacing:.02em;color:var(--text);line-height:1}
+.vl-section-title{font-family:var(--font-mono);font-size:10px;letter-spacing:.3em;color:var(--text3);text-transform:uppercase;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+
+/* INTRO */
+#intro{padding:120px 40px;max-width:1400px;margin:0 auto}
+.intro-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start}
+.intro-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-top:60px}
+.intro-stat{background:var(--bg);padding:28px 24px}
+.intro-stat .num{font-family:var(--font-display);font-size:56px;color:var(--text);line-height:1;margin-bottom:6px}
+.intro-stat .label{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--text3);text-transform:uppercase}
+.intro-right{padding-top:60px}
+.big-quote{font-family:var(--font-serif);font-style:italic;font-size:clamp(22px,3vw,32px);color:var(--text);line-height:1.4;margin-bottom:40px;position:relative;padding-left:24px}
+.big-quote::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:2px;background:var(--red)}
+.intro-body{font-size:15px;color:var(--text2);line-height:1.8;font-weight:300}
+
+/* INDEX GRID */
+#index{padding:100px 40px;border-top:1px solid var(--border)}
+.index-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:60px;max-width:1400px;margin-left:auto;margin-right:auto}
+.index-count{font-family:var(--font-mono);font-size:11px;color:var(--text3);letter-spacing:.15em}
+.aesthetics-grid{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border)}
+.aesthetic-card{background:var(--bg);padding:40px 36px;cursor:none;position:relative;overflow:hidden;transition:background .4s var(--ease);min-height:280px;display:flex;flex-direction:column;justify-content:space-between}
+.aesthetic-card::before{content:'';position:absolute;inset:0;background:var(--card-accent,var(--red));opacity:0;transition:opacity .4s var(--ease);mix-blend-mode:overlay}
+.aesthetic-card:hover::before{opacity:.06}
+.aesthetic-card:hover{background:var(--bg2)}
+.card-num{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--text3);margin-bottom:20px}
+.card-title{font-family:var(--font-display);font-size:32px;letter-spacing:.04em;color:var(--text);margin-bottom:12px;transition:color .3s}
+.card-sub{font-family:var(--font-mono);font-size:10px;letter-spacing:.15em;color:var(--red);text-transform:uppercase;margin-bottom:16px}
+.card-desc{font-size:13px;color:var(--text3);line-height:1.6;flex:1;margin-bottom:24px}
+.card-arrow{display:flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--text3);text-transform:uppercase;transition:color .3s,gap .3s;text-decoration:none;cursor:none;background:none;border:none}
+.aesthetic-card:hover .card-arrow{color:var(--text);gap:16px}
+.card-arrow .arrow{transition:transform .3s var(--ease)}
+.aesthetic-card:hover .arrow{transform:translateX(4px)}
+.card-status-dot{width:6px;height:6px;border-radius:50%;background:var(--red);display:inline-block;margin-right:8px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* STUDY SHELL */
+.study-section{padding:120px 40px;border-top:1px solid var(--border);overflow:hidden}
+.study-inner{max-width:1400px;margin:0 auto}
+.study-header{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-bottom:80px;align-items:end}
+.study-overline{font-family:var(--font-mono);font-size:10px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:20px}
+.study-title{font-family:var(--font-display);font-size:clamp(60px,10vw,140px);line-height:.9;letter-spacing:.02em;color:var(--text)}
+.study-meta{display:flex;flex-direction:column;justify-content:flex-end;gap:0}
+.study-meta-row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:11px}
+.study-meta-row .key{color:var(--text3);letter-spacing:.15em;text-transform:uppercase}
+.study-meta-row .val{color:var(--text)}
+.manifesto-text{font-family:var(--font-display);font-size:clamp(28px,4vw,52px);line-height:1.1;letter-spacing:.02em;color:var(--text);max-width:900px;margin-bottom:80px}
+.manifesto-text .muted{color:var(--text3)}
+.vl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:40px}
+.vl-color-swatch{height:100px;display:flex;flex-direction:column;justify-content:flex-end;padding:12px;cursor:none;overflow:hidden;transition:transform .3s var(--ease)}
+.vl-color-swatch:hover{transform:scaleY(1.05);transform-origin:bottom}
+.swatch-name{font-family:var(--font-mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;mix-blend-mode:difference;color:white}
+.swatch-hex{font-family:var(--font-mono);font-size:9px;mix-blend-mode:difference;color:white;opacity:.6}
+.type-specimens{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:60px}
+.type-spec{background:var(--bg);padding:32px 28px;cursor:none;overflow:hidden}
+.type-spec-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.2em;color:var(--text3);text-transform:uppercase;margin-bottom:16px}
+.spec-tag{font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:.1em;margin-top:8px}
+.visual-study-grid{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:auto auto;gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:60px}
+.vs-cell{background:var(--bg3);overflow:hidden;position:relative;cursor:none}
+.vs-cell canvas{width:100%;height:100%;display:block;transition:transform .8s var(--ease)}
+.vs-cell:hover canvas{transform:scale(1.03)}
+.vs-main{grid-row:span 2;min-height:460px}
+.vs-sm{min-height:220px}
+.vs-cell-label{position:absolute;bottom:0;left:0;right:0;padding:20px 16px 14px;background:linear-gradient(transparent,rgba(0,0,0,.7));font-family:var(--font-mono);font-size:9px;letter-spacing:.2em;color:rgba(255,255,255,.6);text-transform:uppercase;opacity:0;transition:opacity .4s}
+.vs-cell:hover .vs-cell-label{opacity:1}
+.texture-panel{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:80px}
+.texture-cell{height:160px;background:var(--bg3);position:relative;overflow:hidden;cursor:none}
+.texture-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.5);opacity:0;transition:opacity .4s}
+.texture-overlay:hover{opacity:1}
+.texture-cell:hover .texture-overlay{opacity:1}
+.texture-overlay span{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--text2);text-transform:uppercase}
+.principles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:80px}
+.principle-card{background:var(--bg);padding:36px 28px;cursor:none;transition:background .3s}
+.principle-card:hover{background:var(--bg3)}
+.principle-num{font-family:var(--font-display);font-size:72px;color:var(--border2);line-height:1;margin-bottom:16px}
+.principle-title{font-family:var(--font-display);font-size:24px;letter-spacing:.04em;color:var(--text);margin-bottom:12px}
+.principle-body{font-size:13px;color:var(--text3);line-height:1.7}
+
+/* LAB */
+#interactive-demo{padding:120px 40px;border-top:1px solid var(--border);max-width:1400px;margin:0 auto}
+.demo-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:60px}
+.demo-tabs{display:flex;gap:0;border:1px solid var(--border)}
+.demo-tab{padding:10px 20px;font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);background:none;border:none;border-right:1px solid var(--border);cursor:none;transition:background .3s,color .3s}
+.demo-tab:last-child{border-right:none}
+.demo-tab.active,.demo-tab:hover{background:var(--bg2);color:var(--text)}
+.demo-canvas{border:1px solid var(--border);background:var(--bg2);min-height:500px;position:relative;overflow:hidden}
+.glitch-area{padding:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:500px;gap:40px}
+.glitch-text-wrap{position:relative;cursor:none}
+.glitch-main{font-family:var(--font-display);font-size:clamp(60px,10vw,120px);color:var(--text);letter-spacing:.04em;position:relative;user-select:none}
+.glitch-main::before,.glitch-main::after{content:attr(data-text);position:absolute;left:0;top:0;opacity:0}
+.glitch-active .glitch-main::before{color:var(--red);clip-path:polygon(0 20%,100% 20%,100% 40%,0 40%);transform:translateX(-4px);animation:glitch1 .3s steps(1) infinite;opacity:1}
+.glitch-active .glitch-main::after{color:#4affef;clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%);transform:translateX(4px);animation:glitch2 .3s steps(1) infinite;opacity:1}
+@keyframes glitch1{0%{clip-path:polygon(0 10%,100% 10%,100% 30%,0 30%);transform:translateX(-4px)}25%{clip-path:polygon(0 50%,100% 50%,100% 70%,0 70%);transform:translateX(3px)}50%{clip-path:polygon(0 80%,100% 80%,100% 95%,0 95%);transform:translateX(-5px)}75%{clip-path:polygon(0 5%,100% 5%,100% 25%,0 25%);transform:translateX(2px)}100%{clip-path:polygon(0 35%,100% 35%,100% 55%,0 55%);transform:translateX(-3px)}}
+@keyframes glitch2{0%{clip-path:polygon(0 60%,100% 60%,100% 75%,0 75%);transform:translateX(4px)}33%{clip-path:polygon(0 30%,100% 30%,100% 45%,0 45%);transform:translateX(-3px)}66%{clip-path:polygon(0 85%,100% 85%,100% 100%,0 100%);transform:translateX(5px)}100%{clip-path:polygon(0 15%,100% 15%,100% 30%,0 30%);transform:translateX(-4px)}}
+.glitch-controls,.gen-controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.glitch-btn{padding:12px 24px;font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text);background:none;border:1px solid var(--border2);cursor:none;transition:background .3s,border-color .3s,color .3s}
+.glitch-btn:hover,.glitch-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.noise-area{padding:60px;display:flex;flex-direction:column;gap:32px;min-height:500px}
+.noise-preview{flex:1;min-height:240px;border:1px solid var(--border);position:relative;overflow:hidden;background:#111;display:flex;align-items:center;justify-content:center}
+.noise-controls-row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.noise-ctrl label{font-family:var(--font-mono);font-size:9px;letter-spacing:.2em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;display:block}
+.noise-ctrl input[type=range]{width:100%;accent-color:var(--red);cursor:none}
+.noise-ctrl .val{font-family:var(--font-mono);font-size:10px;color:var(--text2);margin-top:4px}
+.manifesto-area{padding:60px;display:flex;flex-direction:column;gap:32px;min-height:500px}
+.generated-text{font-family:var(--font-display);font-size:clamp(24px,4vw,48px);color:var(--text);line-height:1.1;letter-spacing:.02em;min-height:200px;border-bottom:1px solid var(--border);padding-bottom:32px;transition:opacity .5s}
+.generated-text .gen-accent{color:var(--red)}
+.generated-text .gen-muted{color:var(--text3)}
+
+/* UPCOMING */
+#upcoming{padding:100px 40px;border-top:1px solid var(--border)}
+.upcoming-inner{max-width:1400px;margin:0 auto}
+.upcoming-list{margin-top:60px;display:flex;flex-direction:column}
+.upcoming-row{display:flex;align-items:center;justify-content:space-between;padding:28px 0;border-top:1px solid var(--border);cursor:none;transition:padding-left .4s var(--ease);gap:20px}
+.upcoming-row:hover{padding-left:16px}
+.upcoming-row:last-child{border-bottom:1px solid var(--border)}
+.upcoming-name{font-family:var(--font-display);font-size:clamp(20px,3vw,32px);letter-spacing:.04em;color:var(--text2);transition:color .3s}
+.upcoming-row:hover .upcoming-name{color:var(--text)}
+.upcoming-tag{font-family:var(--font-mono);font-size:9px;letter-spacing:.2em;color:var(--text3);text-transform:uppercase;border:1px solid var(--border);padding:5px 12px}
+.upcoming-yr{font-family:var(--font-mono);font-size:11px;color:var(--text3);letter-spacing:.1em;margin-left:auto;min-width:60px;text-align:right}
+
+/* FOOTER */
+footer{padding:80px 40px 48px;border-top:1px solid var(--border)}
+.footer-inner{max-width:1400px;margin:0 auto}
+.footer-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:60px;gap:40px}
+.footer-logo{font-family:var(--font-display);font-size:40px;letter-spacing:.1em;color:var(--text)}
+.footer-copy{font-size:13px;color:var(--text3);max-width:300px;line-height:1.6;margin-top:16px}
+.footer-links{display:flex;flex-direction:column;gap:12px}
+.footer-links a{font-family:var(--font-mono);font-size:11px;letter-spacing:.15em;color:var(--text3);text-decoration:none;text-transform:uppercase;cursor:none;transition:color .3s}
+.footer-links a:hover{color:var(--text)}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:32px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:10px;letter-spacing:.15em;color:var(--text3)}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal.in-view{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:.1s}.reveal-delay-2{transition-delay:.2s}.reveal-delay-3{transition-delay:.3s}.reveal-delay-4{transition-delay:.4s}
+
+/* BRUTALIST SPECIFIC */
+#brutalist-study{background:var(--bg2)}
+.brutalist-manifesto{font-family:var(--font-fmono),var(--font-mono);font-size:clamp(18px,3vw,28px);line-height:1.4;color:var(--text);border:1px solid var(--border2);padding:40px;margin-bottom:60px}
+.brutalist-manifesto mark{background:var(--text);color:var(--bg);padding:0 4px}
+.bru-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:2px solid var(--text3);margin-bottom:40px}
+.bru-cell{border:1px solid var(--text3);padding:24px 20px;font-family:var(--font-fmono),var(--font-mono);font-size:12px;color:var(--text2);min-height:140px;display:flex;flex-direction:column;justify-content:space-between;cursor:none;transition:background .2s,color .2s}
+.bru-cell:hover{background:var(--text);color:var(--bg)}
+.bru-cell .bru-n{font-size:40px;font-family:var(--font-fmono),var(--font-mono);color:var(--text3);line-height:1;margin-bottom:8px}
+.bru-cell:hover .bru-n{color:var(--bg)}
+.raw-html-demo{font-family:var(--font-fmono),var(--font-mono);font-size:12px;color:var(--cyan);background:#050505;border:1px solid var(--border);padding:32px;margin-bottom:60px;line-height:1.8;white-space:pre-wrap;word-break:break-all}
+.raw-html-demo .kw{color:var(--red)}.raw-html-demo .attr{color:var(--yellow)}.raw-html-demo .val{color:var(--green)}
+
+/* TECH LUXE SPECIFIC */
+#techluxe-study{background:var(--bg)}
+.tl-manifesto{font-family:var(--font-body);font-weight:300;font-size:clamp(16px,2.5vw,26px);line-height:1.6;color:var(--text2);max-width:800px;margin-bottom:80px;letter-spacing:.01em}
+.tl-manifesto strong{color:var(--text);font-weight:400}
+.tl-feature-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:60px}
+.tl-feature{background:var(--bg);padding:48px 36px;cursor:none;transition:background .5s}
+.tl-feature:hover{background:var(--bg2)}
+.tl-feature-icon{width:40px;height:40px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;margin-bottom:32px}
+.tl-feature-icon svg{width:16px;height:16px;stroke:var(--text3)}
+.tl-feature-title{font-family:var(--font-body);font-weight:400;font-size:18px;color:var(--text);margin-bottom:12px}
+.tl-feature-body{font-size:13px;color:var(--text3);line-height:1.7;font-weight:300}
+.tl-spec-row{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:60px}
+.tl-spec{background:var(--bg);padding:32px}
+.tl-spec-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.25em;color:var(--text3);text-transform:uppercase;margin-bottom:20px}
+.tl-spec-content{font-family:var(--font-body);font-size:32px;color:var(--text);font-weight:300;letter-spacing:-.01em}
+.tl-spec-content.mono{font-family:var(--font-mono);font-size:13px;color:var(--text2);letter-spacing:.05em;line-height:1.8}
+
+/* DIGITAL BAROQUE SPECIFIC */
+#baroque-study{background:#0d0a14}
+.db-manifesto{font-family:var(--font-corm),var(--font-serif);font-size:clamp(22px,3.5vw,40px);font-style:italic;line-height:1.35;color:#e8e0f5;max-width:900px;margin-bottom:80px}
+.db-manifesto em{color:#9b59ff;font-style:normal}
+.db-ornament-row{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid rgba(155,89,255,.2);margin-bottom:60px}
+.db-ornament{background:#110d1a;border:1px solid rgba(155,89,255,.12);padding:40px 24px;display:flex;flex-direction:column;align-items:center;gap:16px;cursor:none;transition:background .4s}
+.db-ornament:hover{background:#180f28}
+.db-ornament-glyph{font-size:48px;line-height:1;color:rgba(155,89,255,.6)}
+.db-ornament-label{font-family:var(--font-corm),var(--font-serif);font-style:italic;font-size:14px;color:rgba(232,224,245,.5);letter-spacing:.1em;text-align:center}
+.db-layer-canvas{border:1px solid rgba(155,89,255,.15);margin-bottom:60px;background:#0d0a14;min-height:360px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;cursor:none}
+
+/* LIMINAL SPECIFIC */
+#liminal-study{background:#0f0f10}
+.lim-manifesto{font-family:var(--font-body);font-weight:300;font-size:clamp(16px,2.5vw,24px);line-height:1.9;color:rgba(200,198,195,.7);max-width:750px;margin-bottom:80px}
+.lim-manifesto strong{color:rgba(200,198,195,.9);font-weight:300}
+.lim-room-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(200,198,195,.05);border:1px solid rgba(200,198,195,.05);margin-bottom:60px}
+.lim-room{background:#101012;padding:0;cursor:none;position:relative;overflow:hidden;min-height:280px}
+.lim-room canvas{width:100%;height:100%;display:block}
+.lim-room-label{position:absolute;bottom:20px;left:20px;font-family:var(--font-mono);font-size:9px;letter-spacing:.2em;color:rgba(200,198,195,.3);text-transform:uppercase}
+.lim-text-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(200,198,195,.05);border:1px solid rgba(200,198,195,.05);margin-bottom:60px}
+.lim-text-cell{background:#0f0f10;padding:40px 32px}
+.lim-text-cell-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.25em;color:rgba(200,198,195,.25);text-transform:uppercase;margin-bottom:20px}
+.lim-text-cell-content{font-family:var(--font-body);font-weight:300;font-size:16px;color:rgba(200,198,195,.5);line-height:1.8}
+
+/* POST-INTERNET SPECIFIC */
+#postinternet-study{background:#050505}
+.pi-manifesto{font-family:var(--font-mono);font-size:clamp(13px,1.8vw,18px);line-height:1.6;color:var(--text2);max-width:900px;margin-bottom:60px}
+.pi-manifesto .hi{color:var(--cyan)}.pi-manifesto .err{color:var(--red)}.pi-manifesto .ok{color:var(--green)}
+.pi-feed{border:1px solid var(--border);margin-bottom:60px}
+.pi-post{padding:20px 24px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:start;cursor:none;transition:background .2s}
+.pi-post:hover{background:var(--bg2)}
+.pi-post:last-child{border-bottom:none}
+.pi-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:10px;color:var(--bg)}
+.pi-username{font-family:var(--font-mono);font-size:11px;color:var(--text3);margin-bottom:6px}
+.pi-text{font-size:14px;color:var(--text2);line-height:1.5}
+.pi-text .tag{color:var(--cyan)}.pi-text .link{color:var(--blue);text-decoration:underline}
+.pi-time{font-family:var(--font-mono);font-size:9px;color:var(--text3);white-space:nowrap}
+.pi-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:60px}
+.pi-stat{background:var(--bg);padding:28px 24px}
+.pi-stat-num{font-family:var(--font-fmono),var(--font-mono);font-size:40px;color:var(--text);line-height:1;margin-bottom:6px}
+.pi-stat-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.15em;color:var(--text3);text-transform:uppercase}
+.pi-element-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:60px}
+.pi-element{background:var(--bg);padding:32px 24px;cursor:none;transition:background .3s}
+.pi-element:hover{background:var(--bg3)}
+.pi-element-title{font-family:var(--font-mono);font-size:11px;letter-spacing:.2em;color:var(--text3);text-transform:uppercase;margin-bottom:16px}
+.pi-element-demo{font-size:14px;color:var(--text2);line-height:1.6}
+
+/* TACTICAL MEDIA SPECIFIC */
+#tactical-study{background:#080a08}
+.tm-manifesto{font-family:var(--font-body);font-size:clamp(16px,2.5vw,26px);font-weight:700;line-height:1.3;color:var(--text);max-width:900px;margin-bottom:80px;letter-spacing:-.01em}
+.tm-manifesto .act{color:var(--green)}.tm-manifesto .warn{color:var(--yellow)}
+.tm-action-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(45,214,122,.1);border:1px solid rgba(45,214,122,.15);margin-bottom:60px}
+.tm-action{background:#080a08;padding:40px 32px;cursor:none;transition:background .3s;position:relative;overflow:hidden}
+.tm-action::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--green);opacity:.4;transition:opacity .3s}
+.tm-action:hover{background:#0c100c}
+.tm-action:hover::before{opacity:1}
+.tm-action-num{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:rgba(45,214,122,.4);margin-bottom:20px}
+.tm-action-title{font-family:var(--font-display);font-size:28px;letter-spacing:.04em;color:var(--text);margin-bottom:12px}
+.tm-action-body{font-size:13px;color:rgba(240,237,232,.4);line-height:1.7}
+.tm-zine{border:2px solid rgba(45,214,122,.2);padding:40px;margin-bottom:60px;background:#060806;position:relative}
+.tm-zine::before{content:'COMMUNIQUÉ';position:absolute;top:-10px;left:24px;font-family:var(--font-mono);font-size:9px;letter-spacing:.25em;color:var(--green);background:#060806;padding:0 8px}
+.tm-zine-text{font-family:var(--font-body);font-size:15px;color:rgba(240,237,232,.6);line-height:1.9;font-weight:300}
+.tm-zine-text strong{color:var(--green);font-weight:400}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  body{cursor:auto}
+  #cursor,#cursor-ring{display:none}
+  nav{padding:16px 20px}
+  nav.scrolled{padding:12px 20px}
+  .nav-links{display:none}
+  .nav-menu-btn{display:flex}
+  #hero{padding:0 20px 48px}
+  .hero-sub-row{flex-direction:column;align-items:flex-start;gap:16px}
+  #intro{padding:80px 20px}
+  .intro-grid{grid-template-columns:1fr;gap:48px}
+  .intro-right{padding-top:0}
+  #index{padding:80px 20px}
+  .aesthetics-grid{grid-template-columns:1fr 1fr}
+  .study-section{padding:80px 20px}
+  .study-header{grid-template-columns:1fr;gap:32px}
+  .vl-grid{grid-template-columns:1fr 1fr}
+  .visual-study-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto}
+  .vs-main{grid-row:span 1;grid-column:span 2}
+  .type-specimens{grid-template-columns:1fr}
+  .principles-grid{grid-template-columns:1fr}
+  .texture-panel{grid-template-columns:1fr 1fr}
+  #interactive-demo{padding:80px 20px}
+  .demo-header{flex-direction:column;align-items:flex-start;gap:24px}
+  .glitch-area,.noise-area,.manifesto-area{padding:32px 20px}
+  .noise-controls-row{grid-template-columns:1fr}
+  .bru-grid{grid-template-columns:1fr 1fr}
+  .tl-feature-row{grid-template-columns:1fr}
+  .db-ornament-row{grid-template-columns:1fr 1fr}
+  .lim-room-row{grid-template-columns:1fr}
+  .lim-text-grid{grid-template-columns:1fr}
+  .pi-stat-row{grid-template-columns:1fr 1fr}
+  .pi-element-grid{grid-template-columns:1fr}
+  .tm-action-grid{grid-template-columns:1fr}
+  .tl-spec-row{grid-template-columns:1fr}
+  #upcoming{padding:80px 20px}
+  footer{padding:60px 20px 36px}
+  .footer-top{flex-direction:column;gap:28px}
+  .footer-bottom{flex-direction:column;gap:12px;align-items:flex-start}
+  .index-header{flex-direction:column;gap:12px}
+  .demo-tabs{flex-wrap:wrap}
+}
+@media(max-width:600px){
+  .aesthetics-grid{grid-template-columns:1fr}
+  .intro-stat-grid{grid-template-columns:1fr 1fr}
+  .texture-panel{grid-template-columns:1fr}
+  .pi-post{grid-template-columns:1fr;gap:8px}
+  .pi-time{text-align:left}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">ÆSTHETIC ARCHIVE</a>
+  <ul class="nav-links">
+    <li><a href="#index">Studies</a></li>
+    <li><a href="#grunge-study">Grunge</a></li>
+    <li><a href="#brutalist-study">Brutalist</a></li>
+    <li><a href="#techluxe-study">Tech Luxe</a></li>
+    <li><a href="#baroque-study">Baroque</a></li>
+    <li><a href="#liminal-study">Liminal</a></li>
+    <li><a href="#postinternet-study">Post-Net</a></li>
+    <li><a href="#tactical-study">Tactical</a></li>
+    <li><a href="#interactive-demo">Lab</a></li>
+  </ul>
+  <button class="nav-menu-btn" id="menuBtn" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-nav" id="mobileNav">
+  <a href="#index" class="mob-link">Studies</a>
+  <a href="#grunge-study" class="mob-link">Grunge</a>
+  <a href="#brutalist-study" class="mob-link">Brutalist</a>
+  <a href="#techluxe-study" class="mob-link">Tech Luxe</a>
+  <a href="#baroque-study" class="mob-link">Baroque</a>
+  <a href="#liminal-study" class="mob-link">Liminal</a>
+  <a href="#postinternet-study" class="mob-link">Post-Net</a>
+  <a href="#tactical-study" class="mob-link">Tactical</a>
+  <a href="#interactive-demo" class="mob-link">Lab</a>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-eyebrow">DIGITAL DESIGN STUDIES — EST. 2025</div>
+  <h1 class="hero-title">
+    <span class="line">DESIGN</span>
+    <span class="line">IS NOT</span>
+    <span class="line">NEUTRAL</span>
+  </h1>
+  <div class="hero-sub-row">
+    <p class="hero-desc">A living digital archive cataloguing the visual philosophies, languages, and systems that shape contemporary aesthetics. Curated. Analytical. Evolving.</p>
+    <div style="font-family:var(--font-mono);font-size:11px;color:var(--text3);letter-spacing:.1em">007 / ∞</div>
+    <div class="hero-scroll-hint">Scroll to Explore</div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="marquee-item">Corporate Grunge</span><span class="marquee-item">Brutalist Web</span><span class="marquee-item">Tech Luxe</span><span class="marquee-item">Digital Baroque</span><span class="marquee-item">Liminal Space</span><span class="marquee-item">Post-Internet</span><span class="marquee-item">Tactical Media</span><span class="marquee-item">Corporate Grunge</span><span class="marquee-item">Brutalist Web</span><span class="marquee-item">Tech Luxe</span><span class="marquee-item">Digital Baroque</span><span class="marquee-item">Liminal Space</span><span class="marquee-item">Post-Internet</span><span class="marquee-item">Tactical Media</span>
+  </div>
+</div>
+
+<!-- INTRO -->
+<section id="intro">
+  <div class="intro-grid">
+    <div class="intro-left reveal">
+      <div class="section-label">About This Archive</div>
+      <div class="intro-stat-grid">
+        <div class="intro-stat"><div class="num">07</div><div class="label">Active Studies</div></div>
+        <div class="intro-stat"><div class="num">∞</div><div class="label">More Queued</div></div>
+        <div class="intro-stat"><div class="num">42+</div><div class="label">Components</div></div>
+        <div class="intro-stat"><div class="num">2025</div><div class="label">Inception Year</div></div>
+      </div>
+    </div>
+    <div class="intro-right reveal reveal-delay-2">
+      <div class="big-quote">"Every visual choice is a political act. Every aesthetic is an ideology made manifest."</div>
+      <p class="intro-body">The Æsthetic Archive is a structured, evolving study of how visual design systems communicate culture, power, and meaning. Each aesthetic receives a deep investigation — its origins, visual grammar, philosophical underpinnings, and cultural context — presented as a living document that grows over time.<br><br>Seven complete studies. Each its own world. Each its own visual language.</p>
+    </div>
+  </div>
+</section>
+
+<!-- INDEX -->
+<section id="index">
+  <div class="index-header reveal">
+    <h2 class="section-title">STUDIES</h2>
+    <span class="index-count">7 aesthetics — all active</span>
+  </div>
+  <div class="aesthetics-grid">
+    <div class="aesthetic-card reveal" style="--card-accent:#d4431a" onclick="scrollTo('grunge-study')">
+      <div><div class="card-num"><span class="card-status-dot"></span>STUDY 001</div><div class="card-title">CORPORATE GRUNGE</div><div class="card-sub">Subversion as Strategy</div><p class="card-desc">Where institutional authority meets controlled disorder. The deliberate embrace of grit within corporate frameworks as visual dissonance.</p></div>
+      <button class="card-arrow">EXPLORE <span class="arrow">→</span></button>
+    </div>
+    <div class="aesthetic-card reveal reveal-delay-1" style="--card-accent:#f0ede8" onclick="scrollTo('brutalist-study')">
+      <div><div class="card-num"><span class="card-status-dot"></span>STUDY 002</div><div class="card-title">BRUTALIST WEB</div><div class="card-sub">Raw Functionality</div><p class="card-desc">Anti-design as design philosophy. Exposed structure, semantic purity, and the rejection of ornamental excess as cultural critique.</p></div>
+      <button class="card-arrow">EXPLORE <span class="arrow">→</span></button>
+    </div>
+    <div class="aesthetic-card reveal reveal-delay-2" style="--card-accent:#c8c8c8" onclick="scrollTo('techluxe-study')">
+      <div><div class="card-num"><span class="card-status-dot"></span>STUDY 003</div><div class="card-title">TECH LUXE</div><div class="card-sub">Precision as Status</div><p class="card-desc">Restraint, monochrome mastery, negative space as a symbol of confidence. The aesthetic language of high-value technology.</p></div>
+      <button class="card-arrow">EXPLORE <span class="arrow">→</span></button>
+    </div>
+    <div class="aesthetic-card reveal" style="--card-accent:#9b59ff" onclick="scrollTo('baroque-study')">
+      <div><div class="card-num"><span class="card-status-dot"></span>STUDY 004</div><div class="card-title">DIGITAL BAROQUE</div><div class="card-sub">Maximalist Computation</div><p class="card-desc">Excess as expression. The ornate, layered visual language of post-scarcity digital culture where everything competes simultaneously.</p></div>
+      <button class="card-arrow">EXPLORE <span class="arrow">→</span></button>
+    </div>
+    <div class="aesthetic-card reveal reveal-delay-1" style="--card-accent:#c8c6c3" onclick="scrollTo('liminal-study')">
+      <div><div class="card-num"><span class="card-status-dot"></span>STUDY 005</div><div class="card-title">LIMINAL SPACE</div><div class="card-sub">Threshold Aesthetics</div><p class="card-desc">The visual language of transitional zones, empty institutions, and spaces caught between states — comfort and dread inseparable.</p></div>
+      <button class="card-arrow">EXPLORE <span class="arrow">→</span></button>
+    </div>
+    <div class="aesthetic-card reveal reveal-delay-2" style="--card-accent:#4affef" onclick="scrollTo('postinternet-study')">
+      <div><div class="card-num"><span class="card-status-dot"></span>STUDY 006</div><div class="card-title">POST-INTERNET</div><div class="card-sub">Mediated Reality</div><p class="card-desc">Aesthetics formed when the internet became the primary lens through which reality is processed — irony, flatness, hyperreality.</p></div>
+      <button class="card-arrow">EXPLORE <span class="arrow">→</span></button>
+    </div>
+    <div class="aesthetic-card reveal" style="--card-accent:#2dd67a;grid-column:1/-1;min-height:auto" onclick="scrollTo('tactical-study')">
+      <div style="display:flex;align-items:start;justify-content:space-between;flex-wrap:wrap;gap:24px">
+        <div><div class="card-num"><span class="card-status-dot"></span>STUDY 007</div><div class="card-title" style="font-size:clamp(28px,4vw,52px)">TACTICAL MEDIA</div><div class="card-sub">Activist Aesthetics</div></div>
+        <p class="card-desc" style="max-width:400px;margin-bottom:0">The weaponisation of design against power. Radical graphic communication as direct action — urgency, legibility, confrontation.</p>
+      </div>
+      <button class="card-arrow" style="margin-top:24px">EXPLORE <span class="arrow">→</span></button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- STUDY 001: CORPORATE GRUNGE -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="grunge-study" class="study-section" style="background:var(--bg2)">
+  <div class="study-inner">
+    <div class="study-header">
+      <div><div class="study-overline" style="color:var(--red)">STUDY 001 — CORPORATE GRUNGE</div><h2 class="study-title reveal">CORPORATE<br>GRUNGE</h2></div>
+      <div class="study-meta reveal reveal-delay-2">
+        <div class="study-meta-row"><span class="key">Classification</span><span class="val">Subversive Corporate</span></div>
+        <div class="study-meta-row"><span class="key">Era</span><span class="val">2015 – Present</span></div>
+        <div class="study-meta-row"><span class="key">Primary Medium</span><span class="val">Digital / Print Hybrid</span></div>
+        <div class="study-meta-row"><span class="key">Palette Logic</span><span class="val">Void + Signal + Hazard</span></div>
+        <div class="study-meta-row"><span class="key">Status</span><span class="val" style="color:var(--red)">● Live Research</span></div>
+      </div>
+    </div>
+    <div class="manifesto-text reveal">The suit wears a safety pin. <span class="muted">The quarterly report is printed on newsprint.</span> Corporate Grunge is the language of institutions that know the system is broken <span style="color:var(--red)">and choose aesthetics as protest.</span>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Color System</div>
+      <div class="vl-grid">
+        <div class="vl-color-swatch" style="background:#0a0a0a"><div class="swatch-name">Void Black</div><div class="swatch-hex">#0A0A0A</div></div>
+        <div class="vl-color-swatch" style="background:#f0ede8"><div class="swatch-name">Aged Linen</div><div class="swatch-hex">#F0EDE8</div></div>
+        <div class="vl-color-swatch" style="background:#d4431a"><div class="swatch-name">Safety Signal</div><div class="swatch-hex">#D4431A</div></div>
+        <div class="vl-color-swatch" style="background:#e8c547"><div class="swatch-name">Hazard Tape</div><div class="swatch-hex">#E8C547</div></div>
+        <div class="vl-color-swatch" style="background:#3a3530"><div class="swatch-name">Industrial</div><div class="swatch-hex">#3A3530</div></div>
+        <div class="vl-color-swatch" style="background:#2a2520"><div class="swatch-name">Charcoal</div><div class="swatch-hex">#2A2520</div></div>
+        <div class="vl-color-swatch" style="background:#8b7d70"><div class="swatch-name">Concrete</div><div class="swatch-hex">#8B7D70</div></div>
+        <div class="vl-color-swatch" style="background:#c8c0b5"><div class="swatch-name">Zinc</div><div class="swatch-hex">#C8C0B5</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Typography</div>
+      <div class="type-specimens">
+        <div class="type-spec"><div class="type-spec-label">Display — Bebas Neue</div><div style="font-family:var(--font-display);font-size:48px;color:var(--text);line-height:1;letter-spacing:.02em">SMASH<br>THE BRIEF</div><div class="spec-tag">Primary Display — ALLCAPS — Tracking 0.04em</div></div>
+        <div class="type-spec"><div class="type-spec-label">Editorial — Playfair Display Italic</div><div style="font-family:var(--font-serif);font-style:italic;font-size:32px;color:var(--text2)">"The boardroom<br>as battleground."</div><div class="spec-tag">Secondary Voice — Italic Contrast</div></div>
+        <div class="type-spec"><div class="type-spec-label">Body — Space Grotesk Light</div><div style="font-family:var(--font-body);font-size:20px;color:var(--text2);font-weight:300">Structure enables rebellion. The more rigid the system, the more visible the subversion.</div><div class="spec-tag">Body Copy — 300 Weight</div></div>
+        <div class="type-spec"><div class="type-spec-label">Data — DM Mono</div><div style="font-family:var(--font-mono);font-size:16px;color:var(--text3)">SYS_FILE: corpus.grunge.v3<br>STATUS: 01 ACTIVE<br>ENTRIES: 2,847 objects</div><div class="spec-tag">Metadata / Technical</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Visual Study — Generative References</div>
+      <div class="visual-study-grid">
+        <div class="vs-cell vs-main"><canvas id="g-main" width="600" height="800"></canvas><div class="vs-cell-label">Primary Reference — Institutional Decay</div></div>
+        <div class="vs-cell vs-sm"><canvas id="g-sm1" width="300" height="300"></canvas><div class="vs-cell-label">Texture Study 01</div></div>
+        <div class="vs-cell vs-sm"><canvas id="g-sm2" width="300" height="300"></canvas><div class="vs-cell-label">Texture Study 02</div></div>
+        <div class="vs-cell vs-sm"><canvas id="g-sm3" width="300" height="300"></canvas><div class="vs-cell-label">Type Fragment</div></div>
+        <div class="vs-cell vs-sm"><canvas id="g-sm4" width="300" height="300"></canvas><div class="vs-cell-label">Form Study</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Design Principles</div>
+      <div class="principles-grid">
+        <div class="principle-card"><div class="principle-num">01</div><div class="principle-title">PRODUCTIVE FRICTION</div><p class="principle-body">Discomfort is intentional. Rough edges and visual tension create the sensation of something real — made by hands, not algorithms.</p></div>
+        <div class="principle-card"><div class="principle-num">02</div><div class="principle-title">CONTROLLED DISORDER</div><p class="principle-body">Chaos within a system. Every element of decay is curated. The smudge is precisely placed. Authenticity is manufactured.</p></div>
+        <div class="principle-card"><div class="principle-num">03</div><div class="principle-title">INSTITUTIONAL IRONY</div><p class="principle-body">The language of power turned against itself. Official formats subverted through aesthetic choices that reveal their own artifice.</p></div>
+        <div class="principle-card"><div class="principle-num">04</div><div class="principle-title">MATERIAL HONESTY</div><p class="principle-body">Exposed substrates. Visible structure. The grid is not hidden — it is the message. Infrastructure made aesthetic.</p></div>
+        <div class="principle-card"><div class="principle-num">05</div><div class="principle-title">TEMPORAL COMPRESSION</div><p class="principle-body">Simultaneous past and present. New things made to appear worn. Time is collapsed and layered rather than linear.</p></div>
+        <div class="principle-card"><div class="principle-num">06</div><div class="principle-title">SIGNAL VS NOISE</div><p class="principle-body">The aesthetic weaponises distraction. Information competes with texture. Difficulty of reading becomes part of reading.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- STUDY 002: BRUTALIST WEB -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="brutalist-study" class="study-section" style="background:#0a0a0a">
+  <div class="study-inner">
+    <div class="study-header">
+      <div><div class="study-overline" style="color:var(--text2)">STUDY 002 — BRUTALIST WEB</div><h2 class="study-title reveal" style="font-family:var(--font-fmono),var(--font-mono);font-size:clamp(40px,8vw,100px);letter-spacing:-.02em">RAW<br>FUNCTION</h2></div>
+      <div class="study-meta reveal reveal-delay-2">
+        <div class="study-meta-row"><span class="key">Classification</span><span class="val">Anti-Design</span></div>
+        <div class="study-meta-row"><span class="key">Era</span><span class="val">2010 – Present</span></div>
+        <div class="study-meta-row"><span class="key">Primary Medium</span><span class="val">HTML / CSS / Web</span></div>
+        <div class="study-meta-row"><span class="key">Palette Logic</span><span class="val">Black + White + Pure Primary</span></div>
+        <div class="study-meta-row"><span class="key">Status</span><span class="val" style="color:var(--text)">● Active Study</span></div>
+      </div>
+    </div>
+    <div class="brutalist-manifesto reveal">
+      Design is not decoration. <mark>Design is communication.</mark> Strip everything that does not communicate. What remains is truth. The browser is not a canvas — it is a <mark>document medium.</mark> Treat it as such. No fonts. No animations. No apologies.
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Color System — Reduction to Essence</div>
+      <div class="vl-grid">
+        <div class="vl-color-swatch" style="background:#000000"><div class="swatch-name">Pure Black</div><div class="swatch-hex">#000000</div></div>
+        <div class="vl-color-swatch" style="background:#ffffff"><div class="swatch-name">Pure White</div><div class="swatch-hex">#FFFFFF</div></div>
+        <div class="vl-color-swatch" style="background:#ff0000"><div class="swatch-name">System Red</div><div class="swatch-hex">#FF0000</div></div>
+        <div class="vl-color-swatch" style="background:#0000ff"><div class="swatch-name">System Blue</div><div class="swatch-hex">#0000FF</div></div>
+        <div class="vl-color-swatch" style="background:#ffff00"><div class="swatch-name">System Yellow</div><div class="swatch-hex">#FFFF00</div></div>
+        <div class="vl-color-swatch" style="background:#00ff00"><div class="swatch-name">System Green</div><div class="swatch-hex">#00FF00</div></div>
+        <div class="vl-color-swatch" style="background:#808080"><div class="swatch-name">50% Gray</div><div class="swatch-hex">#808080</div></div>
+        <div class="vl-color-swatch" style="background:#c0c0c0"><div class="swatch-name">Silver</div><div class="swatch-hex">#C0C0C0</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Structure Principles — The Anti-Grid</div>
+      <div class="bru-grid">
+        <div class="bru-cell"><div class="bru-n">01</div>No decorative elements</div>
+        <div class="bru-cell"><div class="bru-n">02</div>System fonts only</div>
+        <div class="bru-cell"><div class="bru-n">03</div>Visible borders everywhere</div>
+        <div class="bru-cell"><div class="bru-n">04</div>No hover states that lie</div>
+        <div class="bru-cell"><div class="bru-n">05</div>Tables for tabular data</div>
+        <div class="bru-cell"><div class="bru-n">06</div>Semantic HTML only</div>
+        <div class="bru-cell"><div class="bru-n">07</div>Progressive enhancement</div>
+        <div class="bru-cell"><div class="bru-n">08</div>Zero JavaScript required</div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Raw Code as Visual Language</div>
+      <div class="raw-html-demo"><span class="kw">&lt;!DOCTYPE</span> <span class="attr">html</span><span class="kw">&gt;</span>
+<span class="kw">&lt;html</span> <span class="attr">lang</span>=<span class="val">"en"</span><span class="kw">&gt;</span>
+<span class="kw">&lt;head&gt;</span>
+  <span class="kw">&lt;title&gt;</span>This is a website<span class="kw">&lt;/title&gt;</span>
+  <span class="kw">&lt;meta</span> <span class="attr">charset</span>=<span class="val">"utf-8"</span><span class="kw">&gt;</span>
+<span class="kw">&lt;/head&gt;</span>
+<span class="kw">&lt;body&gt;</span>
+  <span class="kw">&lt;h1&gt;</span>The content is the design<span class="kw">&lt;/h1&gt;</span>
+  <span class="kw">&lt;p&gt;</span>No stylesheets were harmed in the making of this document.<span class="kw">&lt;/p&gt;</span>
+  <span class="kw">&lt;ul&gt;</span>
+    <span class="kw">&lt;li&gt;&lt;a</span> <span class="attr">href</span>=<span class="val">"#"</span><span class="kw">&gt;</span>Links look like links<span class="kw">&lt;/a&gt;&lt;/li&gt;</span>
+    <span class="kw">&lt;li&gt;&lt;a</span> <span class="attr">href</span>=<span class="val">"#"</span><span class="kw">&gt;</span>Visited links look visited<span class="kw">&lt;/a&gt;&lt;/li&gt;</span>
+  <span class="kw">&lt;/ul&gt;</span>
+  <span class="kw">&lt;hr&gt;</span>
+  <span class="kw">&lt;footer&gt;</span>Structure is the aesthetic.<span class="kw">&lt;/footer&gt;</span>
+<span class="kw">&lt;/body&gt;&lt;/html&gt;</span></div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Typography — No Embellishment</div>
+      <div class="type-specimens">
+        <div class="type-spec"><div class="type-spec-label">Monospace Terminal — Fragment Mono</div><div style="font-family:var(--font-fmono),var(--font-mono);font-size:40px;color:var(--text);line-height:1">RAW<br>DATA<br>INPUT</div><div class="spec-tag">Monospace Grid — No kerning adjustments</div></div>
+        <div class="type-spec"><div class="type-spec-label">System Font Stack — No Loading</div><div style="font-family:Georgia,serif;font-size:28px;color:var(--text2);line-height:1.2">"The absence of styling is itself a style."</div><div class="spec-tag">Georgia — Available everywhere, always</div></div>
+        <div class="type-spec"><div class="type-spec-label">System UI — What's Already There</div><div style="font-family:system-ui,sans-serif;font-size:20px;color:var(--text2)">Your operating system chose this font. That is the design decision.</div><div class="spec-tag">System-UI — Zero font loading</div></div>
+        <div class="type-spec"><div class="type-spec-label">Code as Prose — Terminal Readout</div><div style="font-family:var(--font-fmono),monospace;font-size:13px;color:var(--cyan);line-height:1.8">$ cat manifesto.txt<br>&gt; form follows function<br>&gt; function IS form<br>&gt; EOF</div><div class="spec-tag">Terminal aesthetic — CLI as poetry</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Design Principles</div>
+      <div class="principles-grid">
+        <div class="principle-card"><div class="principle-num">01</div><div class="principle-title">ANTI-ORNAMENT</div><p class="principle-body">Every decorative element that doesn't carry information is a lie told to the user. Delete it without ceremony.</p></div>
+        <div class="principle-card"><div class="principle-num">02</div><div class="principle-title">SEMANTIC TRUTH</div><p class="principle-body">HTML elements carry meaning. A heading is a heading. A list is a list. Div soup is an aesthetic choice — usually the wrong one.</p></div>
+        <div class="principle-card"><div class="principle-num">03</div><div class="principle-title">HONEST INTERACTION</div><p class="principle-body">If something is a button, it looks like a button. If it's a link, it's blue and underlined. No deceptive affordances.</p></div>
+        <div class="principle-card"><div class="principle-num">04</div><div class="principle-title">LOAD SPEED AS ETHIC</div><p class="principle-body">Every kilobyte transferred costs the user time, data, and energy. Minimising payload is a moral imperative, not a technical challenge.</p></div>
+        <div class="principle-card"><div class="principle-num">05</div><div class="principle-title">CONTENT PRIMACY</div><p class="principle-body">The words matter. The numbers matter. The images matter. Everything else is furniture. If the content isn't there, design cannot save it.</p></div>
+        <div class="principle-card"><div class="principle-num">06</div><div class="principle-title">STRUCTURE IS STYLE</div><p class="principle-body">A well-structured document rendered in default browser styles is more readable than most designed websites. The browser knows best.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- STUDY 003: TECH LUXE -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="techluxe-study" class="study-section" style="background:var(--bg)">
+  <div class="study-inner">
+    <div class="study-header">
+      <div><div class="study-overline" style="color:var(--text3)">STUDY 003 — TECH LUXE</div><h2 class="study-title reveal" style="font-family:var(--font-body);font-weight:300;letter-spacing:-.02em;font-size:clamp(48px,8vw,110px)">Tech<br>Luxe</h2></div>
+      <div class="study-meta reveal reveal-delay-2">
+        <div class="study-meta-row"><span class="key">Classification</span><span class="val">Precision Minimalism</span></div>
+        <div class="study-meta-row"><span class="key">Era</span><span class="val">2007 – Present</span></div>
+        <div class="study-meta-row"><span class="key">Primary Medium</span><span class="val">Product / Digital Interface</span></div>
+        <div class="study-meta-row"><span class="key">Palette Logic</span><span class="val">Monochrome + Single Metal</span></div>
+        <div class="study-meta-row"><span class="key">Status</span><span class="val" style="color:var(--text)">● Active Study</span></div>
+      </div>
+    </div>
+    <div class="tl-manifesto reveal">
+      <strong>Restraint is the luxury.</strong> When everything screams, silence communicates authority. The object that needs no explanation has achieved something profound. <strong>Negative space is not emptiness</strong> — it is confidence made visible. Every removed element is a decision. Every remaining element earns its place.
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Color System — The Monochrome Spectrum</div>
+      <div class="vl-grid">
+        <div class="vl-color-swatch" style="background:#f8f8f6"><div class="swatch-name">Warm White</div><div class="swatch-hex">#F8F8F6</div></div>
+        <div class="vl-color-swatch" style="background:#e8e8e4"><div class="swatch-name">Off-White</div><div class="swatch-hex">#E8E8E4</div></div>
+        <div class="vl-color-swatch" style="background:#c4c4c0"><div class="swatch-name">Silver Mist</div><div class="swatch-hex">#C4C4C0</div></div>
+        <div class="vl-color-swatch" style="background:#888884"><div class="swatch-name">Pewter</div><div class="swatch-hex">#888884</div></div>
+        <div class="vl-color-swatch" style="background:#444440"><div class="swatch-name">Graphite</div><div class="swatch-hex">#444440</div></div>
+        <div class="vl-color-swatch" style="background:#1c1c1a"><div class="swatch-name">Space Black</div><div class="swatch-hex">#1C1C1A</div></div>
+        <div class="vl-color-swatch" style="background:#0a0a09"><div class="swatch-name">Midnight</div><div class="swatch-hex">#0A0A09</div></div>
+        <div class="vl-color-swatch" style="background:#d4af7a"><div class="swatch-name">Gold Accent</div><div class="swatch-hex">#D4AF7A</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Feature Language — The Minimal Interface</div>
+      <div class="tl-feature-row">
+        <div class="tl-feature">
+          <div class="tl-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+          <div class="tl-feature-title">Temporal Refinement</div>
+          <p class="tl-feature-body">Every design iteration removes rather than adds. The final form carries only what could not be eliminated. Time reveals what lasts.</p>
+        </div>
+        <div class="tl-feature">
+          <div class="tl-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round"><path d="M12 3L3 8.5v7L12 21l9-5.5v-7L12 3z"/></svg></div>
+          <div class="tl-feature-title">Material Intelligence</div>
+          <p class="tl-feature-body">The surface communicates the interior. Anodised aluminium. Optical glass. Ceramic. Material choice is not decoration — it is argument.</p>
+        </div>
+        <div class="tl-feature">
+          <div class="tl-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round"><path d="M3 12h18M12 3l9 9-9 9"/></svg></div>
+          <div class="tl-feature-title">Directed Attention</div>
+          <p class="tl-feature-body">When space is generous, the eye knows exactly where to go. Hierarchy without hierarchy. Navigation without instruction. Clarity as luxury.</p>
+        </div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Specification Language</div>
+      <div class="tl-spec-row">
+        <div class="tl-spec"><div class="tl-spec-label">Display Typeface</div><div class="tl-spec-content" style="font-weight:200;letter-spacing:.05em">SF Pro</div><div style="font-size:13px;color:var(--text3);margin-top:8px;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em">Weight 200 — Ultra Light — The thinner the line, the more expensive the object</div></div>
+        <div class="tl-spec"><div class="tl-spec-label">Data Density</div><div class="tl-spec-content mono">Display: 2560 × 1664<br>Pixel density: 254 ppi<br>P3 wide colour<br>True Tone adaptive</div></div>
+        <div class="tl-spec"><div class="tl-spec-label">Spacing System</div><div class="tl-spec-content" style="font-size:18px;font-weight:300;color:var(--text2)">4 — 8 — 16 — 24 — 32 — 48 — 64 — 96 — 128px</div></div>
+        <div class="tl-spec"><div class="tl-spec-label">Animation Curve</div><div class="tl-spec-content mono">cubic-bezier(0.25, 0.46, 0.45, 0.94)<br>Duration: 280–400ms<br>Easing: ease-out-quart<br>Delay: 0ms unless intentional</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Design Principles</div>
+      <div class="principles-grid">
+        <div class="principle-card"><div class="principle-num">01</div><div class="principle-title">LUXURY OF SPACE</div><p class="principle-body">Generous padding is not waste — it is a statement of resource and confidence. Only brands that can afford restraint are restrained.</p></div>
+        <div class="principle-card"><div class="principle-num">02</div><div class="principle-title">INVISIBLE CRAFT</div><p class="principle-body">The finest work is imperceptible. Micro-adjustments in kerning, sub-pixel rendering, and optical corrections that you feel but cannot name.</p></div>
+        <div class="principle-card"><div class="principle-num">03</div><div class="principle-title">WEIGHT AS SIGNAL</div><p class="principle-body">Font weight communicates price point. Ultra-light says premium. Bold says affordable. The hierarchy is understood without being stated.</p></div>
+        <div class="principle-card"><div class="principle-num">04</div><div class="principle-title">SINGULAR ACCENT</div><p class="principle-body">One gold detail. One warm tone in an otherwise cold palette. The exception proves the rule and gives the eye something to return to.</p></div>
+        <div class="principle-card"><div class="principle-num">05</div><div class="principle-title">SYSTEMIC THINKING</div><p class="principle-body">No element exists in isolation. Every radius, every shadow, every transition shares a logic. The system makes the individual decisions.</p></div>
+        <div class="principle-card"><div class="principle-num">06</div><div class="principle-title">EARNED SIMPLICITY</div><p class="principle-body">Simple is not easy. The appearance of effortlessness requires extraordinary effort. Every simple design contains its own deleted complexity.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- STUDY 004: DIGITAL BAROQUE -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="baroque-study" class="study-section" style="background:#0d0a14">
+  <div class="study-inner">
+    <div class="study-header">
+      <div><div class="study-overline" style="color:rgba(155,89,255,.6)">STUDY 004 — DIGITAL BAROQUE</div><h2 class="study-title reveal" style="font-family:var(--font-corm),var(--font-serif);font-style:italic;font-weight:300;color:#e8e0f5;font-size:clamp(52px,9vw,130px)">Digital<br>Baroque</h2></div>
+      <div class="study-meta reveal reveal-delay-2" style="border-color:rgba(155,89,255,.1)">
+        <div class="study-meta-row" style="border-color:rgba(155,89,255,.1)"><span class="key">Classification</span><span class="val" style="color:#e8e0f5">Maximalist Computation</span></div>
+        <div class="study-meta-row" style="border-color:rgba(155,89,255,.1)"><span class="key">Era</span><span class="val" style="color:#e8e0f5">2018 – Present</span></div>
+        <div class="study-meta-row" style="border-color:rgba(155,89,255,.1)"><span class="key">Primary Medium</span><span class="val" style="color:#e8e0f5">Digital / Motion</span></div>
+        <div class="study-meta-row" style="border-color:rgba(155,89,255,.1)"><span class="key">Palette Logic</span><span class="val" style="color:#e8e0f5">Deep Violet + Gold + Iridescent</span></div>
+        <div class="study-meta-row" style="border-color:rgba(155,89,255,.1)"><span class="key">Status</span><span class="val" style="color:var(--purple)">● Active Study</span></div>
+      </div>
+    </div>
+    <div class="db-manifesto reveal">
+      <em>Excess is not failure.</em> Excess is the <em>point.</em> The Baroque tradition understood that the eye craves richness, depth, complexity, and drama. Digital Baroque applies this wisdom to the infinite canvas — where <em>more is more</em> and restraint is the true vulgarity.
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title" style="color:rgba(155,89,255,.4);border-color:rgba(155,89,255,.15)">Color System — The Deep Palette</div>
+      <div class="vl-grid">
+        <div class="vl-color-swatch" style="background:#0d0a14"><div class="swatch-name">Abyss</div><div class="swatch-hex">#0D0A14</div></div>
+        <div class="vl-color-swatch" style="background:#1a0f2e"><div class="swatch-name">Deep Violet</div><div class="swatch-hex">#1A0F2E</div></div>
+        <div class="vl-color-swatch" style="background:#9b59ff"><div class="swatch-name">Royal Purple</div><div class="swatch-hex">#9B59FF</div></div>
+        <div class="vl-color-swatch" style="background:#c8a2ff"><div class="swatch-name">Amethyst</div><div class="swatch-hex">#C8A2FF</div></div>
+        <div class="vl-color-swatch" style="background:#d4af7a"><div class="swatch-name">Gilded Gold</div><div class="swatch-hex">#D4AF7A</div></div>
+        <div class="vl-color-swatch" style="background:#ff6b9d"><div class="swatch-name">Velvet Rose</div><div class="swatch-hex">#FF6B9D</div></div>
+        <div class="vl-color-swatch" style="background:#00d4ff"><div class="swatch-name">Cerulean</div><div class="swatch-hex">#00D4FF</div></div>
+        <div class="vl-color-swatch" style="background:#e8e0f5"><div class="swatch-name">Pale Dusk</div><div class="swatch-hex">#E8E0F5</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title" style="color:rgba(155,89,255,.4);border-color:rgba(155,89,255,.15)">Ornamental Vocabulary</div>
+      <div class="db-ornament-row">
+        <div class="db-ornament"><div class="db-ornament-glyph">✦</div><div class="db-ornament-label">Stellar Point</div></div>
+        <div class="db-ornament"><div class="db-ornament-glyph">❋</div><div class="db-ornament-label">Baroque Fleuron</div></div>
+        <div class="db-ornament"><div class="db-ornament-glyph">⊗</div><div class="db-ornament-label">Gilded Circle</div></div>
+        <div class="db-ornament"><div class="db-ornament-glyph">⟁</div><div class="db-ornament-label">Trine Form</div></div>
+        <div class="db-ornament"><div class="db-ornament-glyph">◈</div><div class="db-ornament-label">Latticed Diamond</div></div>
+        <div class="db-ornament"><div class="db-ornament-glyph">✿</div><div class="db-ornament-label">Floriated Mark</div></div>
+        <div class="db-ornament"><div class="db-ornament-glyph">⁕</div><div class="db-ornament-label">Asterism</div></div>
+        <div class="db-ornament"><div class="db-ornament-glyph">⌘</div><div class="db-ornament-label">Command Knot</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title" style="color:rgba(155,89,255,.4);border-color:rgba(155,89,255,.15)">Layered Composition Study</div>
+      <div class="db-layer-canvas" id="baroqueCanvas">
+        <canvas id="baroque-art" width="1200" height="400" style="width:100%;height:100%;position:absolute;inset:0"></canvas>
+        <div style="position:relative;z-index:2;text-align:center;font-family:var(--font-corm),var(--font-serif);font-style:italic;font-size:clamp(28px,5vw,60px);color:#e8e0f5;letter-spacing:.04em;text-shadow:0 0 40px rgba(155,89,255,.6)">Ornate by Design</div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title" style="color:rgba(155,89,255,.4);border-color:rgba(155,89,255,.15)">Typography — The Ornate Voice</div>
+      <div class="type-specimens">
+        <div class="type-spec" style="background:#110d1a"><div class="type-spec-label">Display — Cormorant Garamond Italic</div><div style="font-family:var(--font-corm),var(--font-serif);font-style:italic;font-size:44px;color:#e8e0f5;font-weight:300;line-height:1">Abundance<br><em style="color:#9b59ff">as Argument</em></div><div class="spec-tag" style="color:rgba(155,89,255,.4)">300 Italic — Thin strokes, dramatic contrast</div></div>
+        <div class="type-spec" style="background:#110d1a"><div class="type-spec-label">Accent — Gold Lettering</div><div style="font-family:var(--font-corm),var(--font-serif);font-size:28px;color:#d4af7a;font-weight:600;letter-spacing:.1em">GILDED ✦ TEXT<br>ORNAMENT</div><div class="spec-tag" style="color:rgba(155,89,255,.4)">600 Upright — Tracked — Metallic application</div></div>
+        <div class="type-spec" style="background:#110d1a"><div class="type-spec-label">Body — Palatino</div><div style="font-family:Palatino,var(--font-serif);font-size:18px;color:rgba(232,224,245,.6);line-height:1.7;font-weight:300">Ornament is not crime. Ornament is the record of human attention lovingly applied to surface.</div><div class="spec-tag" style="color:rgba(155,89,255,.4)">Palatino 300 — Humanist warmth</div></div>
+        <div class="type-spec" style="background:#110d1a"><div class="type-spec-label">Data Layer — Mono on Dark</div><div style="font-family:var(--font-mono);font-size:12px;color:rgba(155,89,255,.5);line-height:1.8">layers: [gradient, ornament,<br>       typography, texture,<br>       glow, shadow, pattern]<br>opacity: all { blendMode: 'screen' }</div><div class="spec-tag" style="color:rgba(155,89,255,.4)">Mono — Technical infrastructure, ornate output</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title" style="color:rgba(155,89,255,.4);border-color:rgba(155,89,255,.15)">Design Principles</div>
+      <div class="principles-grid" style="background:rgba(155,89,255,.08);border-color:rgba(155,89,255,.15)">
+        <div class="principle-card" style="background:#0d0a14"><div class="principle-num" style="color:rgba(155,89,255,.2)">01</div><div class="principle-title">HORROR VACUI</div><p class="principle-body">The fear of empty space. Every surface is an opportunity. To leave space unfilled is to leave a canvas unfinished — a statement unmade.</p></div>
+        <div class="principle-card" style="background:#0d0a14"><div class="principle-num" style="color:rgba(155,89,255,.2)">02</div><div class="principle-title">LAYERED DEPTH</div><p class="principle-body">Digital Baroque thrives in the z-axis. Elements overlap, bleed through, cast light on each other. The composition has physical depth.</p></div>
+        <div class="principle-card" style="background:#0d0a14"><div class="principle-num" style="color:rgba(155,89,255,.2)">03</div><div class="principle-title">DRAMATIC CONTRAST</div><p class="principle-body">Extreme light and shadow, ultra-thin strokes against bold masses, whispered typeset against proclamation. Contrast creates drama.</p></div>
+        <div class="principle-card" style="background:#0d0a14"><div class="principle-num" style="color:rgba(155,89,255,.2)">04</div><div class="principle-title">GOLD AS GRAMMAR</div><p class="principle-body">Gilded accents are not decoration — they are punctuation. They mark the most important moment in the composition.</p></div>
+        <div class="principle-card" style="background:#0d0a14"><div class="principle-num" style="color:rgba(155,89,255,.2)">05</div><div class="principle-title">MOTION AS MEANING</div><p class="principle-body">Digital Baroque is never still. Particles drift. Gradients breathe. Ornaments rotate. The composition lives in the dimension of time.</p></div>
+        <div class="principle-card" style="background:#0d0a14"><div class="principle-num" style="color:rgba(155,89,255,.2)">06</div><div class="principle-title">SACRED GEOMETRY</div><p class="principle-body">Beneath the ornament lies mathematical order. The chaos is structured. The patterns repeat. The system supports the spectacle.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- STUDY 005: LIMINAL SPACE -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="liminal-study" class="study-section" style="background:#0f0f10">
+  <div class="study-inner">
+    <div class="study-header">
+      <div><div class="study-overline" style="color:rgba(200,198,195,.25)">STUDY 005 — LIMINAL SPACE</div><h2 class="study-title reveal" style="font-family:var(--font-body);font-weight:300;color:rgba(200,198,195,.7);letter-spacing:-.02em;font-size:clamp(44px,8vw,110px)">Liminal<br>Space</h2></div>
+      <div class="study-meta reveal reveal-delay-2" style="border-color:rgba(200,198,195,.06)">
+        <div class="study-meta-row" style="border-color:rgba(200,198,195,.06)"><span class="key" style="color:rgba(200,198,195,.2)">Classification</span><span class="val" style="color:rgba(200,198,195,.6)">Threshold Aesthetics</span></div>
+        <div class="study-meta-row" style="border-color:rgba(200,198,195,.06)"><span class="key" style="color:rgba(200,198,195,.2)">Era</span><span class="val" style="color:rgba(200,198,195,.6)">2019 – Present</span></div>
+        <div class="study-meta-row" style="border-color:rgba(200,198,195,.06)"><span class="key" style="color:rgba(200,198,195,.2)">Primary Medium</span><span class="val" style="color:rgba(200,198,195,.6)">Digital Photography / Render</span></div>
+        <div class="study-meta-row" style="border-color:rgba(200,198,195,.06)"><span class="key" style="color:rgba(200,198,195,.2)">Palette Logic</span><span class="val" style="color:rgba(200,198,195,.6)">Desaturated Fluorescent Warmth</span></div>
+        <div class="study-meta-row" style="border-color:rgba(200,198,195,.06)"><span class="key" style="color:rgba(200,198,195,.2)">Status</span><span class="val" style="color:rgba(200,198,195,.4)">● Active Study</span></div>
+      </div>
+    </div>
+    <div class="lim-manifesto reveal">
+      You know this place. You have been here before — in a dream, or perhaps in a life adjacent to this one. The hallway extends. The carpet pattern repeats. The fluorescent hum is the only sound. <strong>You are between two states</strong> and cannot remember which direction leads forward.
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title" style="color:rgba(200,198,195,.2);border-color:rgba(200,198,195,.06)">Color System — Desaturated Fluorescence</div>
+      <div class="vl-grid">
+        <div class="vl-color-swatch" style="background:#f5f0e8"><div class="swatch-name">Fluorescent Warm</div><div class="swatch-hex">#F5F0E8</div></div>
+        <div class="vl-color-swatch" style="background:#e8e5dc"><div class="swatch-name">Pool Ceiling</div><div class="swatch-hex">#E8E5DC</div></div>
+        <div class="vl-color-swatch" style="background:#c8c4b8"><div class="swatch-name">Beige Carpet</div><div class="swatch-hex">#C8C4B8</div></div>
+        <div class="vl-color-swatch" style="background:#b4b08a"><div class="swatch-name">Yellow-Green Cast</div><div class="swatch-hex">#B4B08A</div></div>
+        <div class="vl-color-swatch" style="background:#8c9490"><div class="swatch-name">Institutional Teal</div><div class="swatch-hex">#8C9490</div></div>
+        <div class="vl-color-swatch" style="background:#4a4840"><div class="swatch-name">Shadowed Corner</div><div class="swatch-hex">#4A4840</div></div>
+        <div class="vl-color-swatch" style="background:#2a2824"><div class="swatch-name">Deep Corridor</div><div class="swatch-hex">#2A2824</div></div>
+        <div class="vl-color-swatch" style="background:#101012"><div class="swatch-name">Absent Dark</div><div class="swatch-hex">#101012</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title" style="color:rgba(200,198,195,.2);border-color:rgba(200,198,195,.06)">Visual Study — Generative Spaces</div>
+      <div class="lim-room-row">
+        <div class="lim-room"><canvas id="lim1" width="400" height="280"></canvas><div class="lim-room-label">Hotel Corridor — 03:47am</div></div>
+        <div class="lim-room"><canvas id="lim2" width="400" height="280"></canvas><div class="lim-room-label">Office After Hours</div></div>
+        <div class="lim-room"><canvas id="lim3" width="400" height="280"></canvas><div class="lim-room-label">Familiar Stairwell</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title" style="color:rgba(200,198,195,.2);border-color:rgba(200,198,195,.06)">Language of Absence</div>
+      <div class="lim-text-grid">
+        <div class="lim-text-cell"><div class="lim-text-cell-label">The Uncanny</div><div class="lim-text-cell-content">Familiar enough to recognise. Wrong enough to unsettle. The liminal aesthetic exploits the gap between memory and experience — the place that should not exist but clearly does.</div></div>
+        <div class="lim-text-cell"><div class="lim-text-cell-label">Human Absence</div><div class="lim-text-cell-content">The chairs arranged as though someone just left. The lights still on. The coffee still warm. Liminal spaces are defined by the negative space of human presence — the ghost of occupancy.</div></div>
+        <div class="lim-text-cell"><div class="lim-text-cell-label">Temporal Suspension</div><div class="lim-text-cell-content">These spaces exist outside of time. They do not progress. The corridor does not lead anywhere. The waiting room waits without waiting for anything in particular.</div></div>
+        <div class="lim-text-cell"><div class="lim-text-cell-label">Fluorescent Grammar</div><div class="lim-text-cell-content">The particular quality of fluorescent light on industrial carpet. The colour temperature that belongs to no hour of day — not warm, not cool. Institutional. Honest. Slightly wrong.</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title" style="color:rgba(200,198,195,.2);border-color:rgba(200,198,195,.06)">Design Principles</div>
+      <div class="principles-grid" style="background:rgba(200,198,195,.02);border-color:rgba(200,198,195,.06)">
+        <div class="principle-card" style="background:#0f0f10"><div class="principle-num" style="color:rgba(200,198,195,.06)">01</div><div class="principle-title" style="color:rgba(200,198,195,.6)">ABSENT PRESENCE</div><p class="principle-body">Design for spaces that feel inhabited but aren't. Objects that imply use. Arrangements that suggest departure.</p></div>
+        <div class="principle-card" style="background:#0f0f10"><div class="principle-num" style="color:rgba(200,198,195,.06)">02</div><div class="principle-title" style="color:rgba(200,198,195,.6)">FAMILIAR WRONGNESS</div><p class="principle-body">Every element should be recognisable. The wrongness comes from context, combination, or scale — not from the unfamiliar.</p></div>
+        <div class="principle-card" style="background:#0f0f10"><div class="principle-num" style="color:rgba(200,198,195,.06)">03</div><div class="principle-title" style="color:rgba(200,198,195,.6)">FLUORESCENT TRUTH</div><p class="principle-body">Industrial lighting reveals rather than flatters. The liminal aesthetic embraces the honest ugliness of utility lighting.</p></div>
+        <div class="principle-card" style="background:#0f0f10"><div class="principle-num" style="color:rgba(200,198,195,.06)">04</div><div class="principle-title" style="color:rgba(200,198,195,.6)">INFINITE CORRIDOR</div><p class="principle-body">The space should suggest continuation beyond the frame. The viewer should feel that the hallway extends forever in both directions.</p></div>
+        <div class="principle-card" style="background:#0f0f10"><div class="principle-num" style="color:rgba(200,198,195,.06)">05</div><div class="principle-title" style="color:rgba(200,198,195,.6)">TEMPORAL AMBIGUITY</div><p class="principle-body">No clocks. No windows. No indicators of hour or season. The space exists in an eternal administrative present.</p></div>
+        <div class="principle-card" style="background:#0f0f10"><div class="principle-num" style="color:rgba(200,198,195,.06)">06</div><div class="principle-title" style="color:rgba(200,198,195,.6)">CARPET AS COSMOS</div><p class="principle-body">The carpet pattern is the universe. Its repetition is infinity. Its staining is time. Do not underestimate the carpet.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- STUDY 006: POST-INTERNET -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="postinternet-study" class="study-section" style="background:#050505">
+  <div class="study-inner">
+    <div class="study-header">
+      <div><div class="study-overline" style="color:var(--cyan);opacity:.4">STUDY 006 — POST-INTERNET</div><h2 class="study-title reveal" style="font-family:var(--font-fmono),var(--font-mono);color:var(--text);font-size:clamp(32px,6vw,90px);letter-spacing:-.01em">POST-<br>INTERNET</h2></div>
+      <div class="study-meta reveal reveal-delay-2">
+        <div class="study-meta-row"><span class="key">Classification</span><span class="val">Mediated Reality</span></div>
+        <div class="study-meta-row"><span class="key">Era</span><span class="val">2008 – Present</span></div>
+        <div class="study-meta-row"><span class="key">Primary Medium</span><span class="val">Digital Native / Networked</span></div>
+        <div class="study-meta-row"><span class="key">Palette Logic</span><span class="val">Ironic + Flat + Overloaded</span></div>
+        <div class="study-meta-row"><span class="key">Status</span><span class="val" style="color:var(--cyan)">● Active Study</span></div>
+      </div>
+    </div>
+    <div class="pi-manifesto reveal">
+      <span class="hi">&gt; the internet is the world now</span><br>
+      <span class="err">&gt; the world is mediated by the internet</span><br>
+      <span class="ok">&gt; there is no outside position from which to view this</span><br>
+      <span class="hi">&gt; irony is the only honest response</span><br>
+      <span class="err">&gt; sincerity is available at premium</span><br>
+      <span class="ok">&gt; flatness is not a limit — it is the truth of the medium</span><br>
+      <span class="hi">&gt; EOF</span>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Network Statistics — Real-Time Condition</div>
+      <div class="pi-stat-row">
+        <div class="pi-stat"><div class="pi-stat-num">4.9B</div><div class="pi-stat-label">Daily social posts</div></div>
+        <div class="pi-stat"><div class="pi-stat-num">~∞</div><div class="pi-stat-label">Images existing online</div></div>
+        <div class="pi-stat"><div class="pi-stat-num">0.08s</div><div class="pi-stat-label">Avg attention span drop</div></div>
+        <div class="pi-stat"><div class="pi-stat-num">↯</div><div class="pi-stat-label">Signal to noise ratio</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Visual Language — Flat, Ironic, Overloaded</div>
+      <div class="vl-grid">
+        <div class="vl-color-swatch" style="background:#ff0080"><div class="swatch-name">Meme Magenta</div><div class="swatch-hex">#FF0080</div></div>
+        <div class="vl-color-swatch" style="background:#00ff88"><div class="swatch-name">Chrome Green</div><div class="swatch-hex">#00FF88</div></div>
+        <div class="vl-color-swatch" style="background:#4affef"><div class="swatch-name">Hyperlink Cyan</div><div class="swatch-hex">#4AFFEF</div></div>
+        <div class="vl-color-swatch" style="background:#ff4400"><div class="swatch-name">404 Orange</div><div class="swatch-hex">#FF4400</div></div>
+        <div class="vl-color-swatch" style="background:#ffffff"><div class="swatch-name">Default White</div><div class="swatch-hex">#FFFFFF</div></div>
+        <div class="vl-color-swatch" style="background:#000000"><div class="swatch-name">Terminal Black</div><div class="swatch-hex">#000000</div></div>
+        <div class="vl-color-swatch" style="background:#1a6ef5"><div class="swatch-name">Link Blue</div><div class="swatch-hex">#1A6EF5</div></div>
+        <div class="vl-color-swatch" style="background:#551a8b"><div class="swatch-name">Visited Purple</div><div class="swatch-hex">#551A8B</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Simulated Feed — The Aesthetic in Context</div>
+      <div class="pi-feed">
+        <div class="pi-post">
+          <div class="pi-avatar" style="background:#ff0080">NN</div>
+          <div><div class="pi-username">@netart_null</div><div class="pi-text">the internet has already been archived. we are living in <span class="tag">#postdigital</span> time — the ghost of the web haunts the web. <span class="link">read more →</span></div></div>
+          <div class="pi-time">2h ago</div>
+        </div>
+        <div class="pi-post">
+          <div class="pi-avatar" style="background:#4affef;color:#000">FF</div>
+          <div><div class="pi-username">@flatfile_</div><div class="pi-text">irony was a defence mechanism. now it's infrastructure. <span class="tag">#postinternet</span> <span class="tag">#designtheory</span></div></div>
+          <div class="pi-time">4h ago</div>
+        </div>
+        <div class="pi-post">
+          <div class="pi-avatar" style="background:#00ff88;color:#000">HV</div>
+          <div><div class="pi-username">@hyperreal.void</div><div class="pi-text">new aesthetic study just dropped → <span class="link">aesthetic-archive.net/post-internet</span> — finally someone mapping this properly</div></div>
+          <div class="pi-time">6h ago</div>
+        </div>
+        <div class="pi-post">
+          <div class="pi-avatar" style="background:#1a6ef5">GF</div>
+          <div><div class="pi-username">@glitch.forum</div><div class="pi-text">the flatness isn't laziness. it's truth. the screen IS flat. denying that is the lie. <span class="tag">#brutalism</span> <span class="tag">#webdesign</span></div></div>
+          <div class="pi-time">8h ago</div>
+        </div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Elemental Components</div>
+      <div class="pi-element-grid">
+        <div class="pi-element"><div class="pi-element-title">Hyperlink as Aesthetic</div><div class="pi-element-demo">The blue underlined link is the most honest element of the web. It says: <span style="color:#1a6ef5;text-decoration:underline">click here to go somewhere else.</span> No deception. No UX theatre. Pure function.</div></div>
+        <div class="pi-element"><div class="pi-element-title">Error as Content</div><div class="pi-element-demo" style="font-family:var(--font-mono);font-size:12px;color:var(--red)">404 Not Found<br>This page cannot be displayed<br>Connection refused<br>ERR_CONNECTION_TIMED_OUT<br><span style="color:var(--text3)">// Error is the message</span></div></div>
+        <div class="pi-element"><div class="pi-element-title">Ironic Sincerity</div><div class="pi-element-demo">The post-internet aesthetic holds two truths simultaneously: everything is mediated, and feelings remain real. Irony is not the end of meaning — it is meaning's updated operating system.</div></div>
+        <div class="pi-element"><div class="pi-element-title">Screenshot Culture</div><div class="pi-element-demo" style="font-family:var(--font-mono);font-size:11px;color:var(--text3);line-height:1.8">[ JPEG_ARTIFACT_0083.jpg ]<br>[ SCREENSHOT_2019_04.png ]<br>[ REPOST_REPOST_REPOST.gif ]<br>// The copy is the original</div></div>
+        <div class="pi-element"><div class="pi-element-title">Platform Vernacular</div><div class="pi-element-demo">Each platform generates its own dialect. The font choice, the image ratio, the character limit — these are not design decisions but platform impositions that become the aesthetic.</div></div>
+        <div class="pi-element"><div class="pi-element-title">Timestamp as Archive</div><div class="pi-element-demo" style="font-family:var(--font-mono);font-size:11px;color:var(--text3)">Posted: 7 years ago<br>Edited: 3 years ago<br>Last seen: 2 months ago<br>Cached: 1999-2024<br><span style="color:var(--text2)">Time becomes visible online</span></div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title">Design Principles</div>
+      <div class="principles-grid">
+        <div class="principle-card"><div class="principle-num">01</div><div class="principle-title">FLATNESS AS TRUTH</div><p class="principle-body">Screens are flat. Simulating depth is a lie. Post-internet design accepts the two-dimensional nature of digital media without apology.</p></div>
+        <div class="principle-card"><div class="principle-num">02</div><div class="principle-title">COPY AS ORIGINAL</div><p class="principle-body">In networked culture, the copy circulates further than the original. The screenshot becomes the artwork. The remix is the text.</p></div>
+        <div class="principle-card"><div class="principle-num">03</div><div class="principle-title">PLATFORM AWARENESS</div><p class="principle-body">Design acknowledges its distribution channel. An image made for Instagram is shaped by Instagram. The container is part of the content.</p></div>
+        <div class="principle-card"><div class="principle-num">04</div><div class="principle-title">IRONIC DISTANCE</div><p class="principle-body">Nothing is presented at face value. Every aesthetic choice carries self-awareness of its own construction. Earnestness is a disguise.</p></div>
+        <div class="principle-card"><div class="principle-num">05</div><div class="principle-title">SPEED OF CULTURE</div><p class="principle-body">The aesthetic must survive at scroll speed. Complexity is lost. Legibility and impact at thumbnail resolution are the primary requirements.</p></div>
+        <div class="principle-card"><div class="principle-num">06</div><div class="principle-title">ARCHIVE CONSCIOUSNESS</div><p class="principle-body">Everything is already documented. Design is produced with the knowledge that it will be screenshotted, archived, and decontextualised.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- STUDY 007: TACTICAL MEDIA -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="tactical-study" class="study-section" style="background:#080a08">
+  <div class="study-inner">
+    <div class="study-header">
+      <div><div class="study-overline" style="color:rgba(45,214,122,.5)">STUDY 007 — TACTICAL MEDIA</div><h2 class="study-title reveal" style="font-family:var(--font-syne),var(--font-body);font-weight:800;color:var(--text);letter-spacing:-.02em;font-size:clamp(44px,8vw,120px)">TACTICAL<br>MEDIA</h2></div>
+      <div class="study-meta reveal reveal-delay-2" style="border-color:rgba(45,214,122,.1)">
+        <div class="study-meta-row" style="border-color:rgba(45,214,122,.1)"><span class="key">Classification</span><span class="val">Activist Aesthetics</span></div>
+        <div class="study-meta-row" style="border-color:rgba(45,214,122,.1)"><span class="key">Era</span><span class="val">1990 – Present</span></div>
+        <div class="study-meta-row" style="border-color:rgba(45,214,122,.1)"><span class="key">Primary Medium</span><span class="val">Print / Broadcast / Digital</span></div>
+        <div class="study-meta-row" style="border-color:rgba(45,214,122,.1)"><span class="key">Palette Logic</span><span class="val">Urgency + Legibility + Contrast</span></div>
+        <div class="study-meta-row" style="border-color:rgba(45,214,122,.1)"><span class="key">Status</span><span class="val" style="color:var(--green)">● Active Study</span></div>
+      </div>
+    </div>
+    <div class="tm-manifesto reveal">
+      Design is <span class="act">direct action.</span> The poster is a weapon. The typeface is a <span class="warn">political choice.</span> Every design decision carries consequence in the real world. <span class="act">Tactical Media</span> refuses the separation between aesthetics and ethics — the medium <span class="warn">is the message</span> and the message <span class="act">must reach everyone.</span>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title" style="color:rgba(45,214,122,.3);border-color:rgba(45,214,122,.1)">Color System — High Contrast Action</div>
+      <div class="vl-grid">
+        <div class="vl-color-swatch" style="background:#0a0f0a"><div class="swatch-name">Ground Black</div><div class="swatch-hex">#0A0F0A</div></div>
+        <div class="vl-color-swatch" style="background:#f5f5f0"><div class="swatch-name">Newsprint</div><div class="swatch-hex">#F5F5F0</div></div>
+        <div class="vl-color-swatch" style="background:#2dd67a"><div class="swatch-name">Signal Green</div><div class="swatch-hex">#2DD67A</div></div>
+        <div class="vl-color-swatch" style="background:#e8c547"><div class="swatch-name">Warning Yellow</div><div class="swatch-hex">#E8C547</div></div>
+        <div class="vl-color-swatch" style="background:#ff2b2b"><div class="swatch-name">Alert Red</div><div class="swatch-hex">#FF2B2B</div></div>
+        <div class="vl-color-swatch" style="background:#ff8800"><div class="swatch-name">Hazard Orange</div><div class="swatch-hex">#FF8800</div></div>
+        <div class="vl-color-swatch" style="background:#1a3a1a"><div class="swatch-name">Deep Forest</div><div class="swatch-hex">#1A3A1A</div></div>
+        <div class="vl-color-swatch" style="background:#3a3a00"><div class="swatch-name">Military Olive</div><div class="swatch-hex">#3A3A00</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title" style="color:rgba(45,214,122,.3);border-color:rgba(45,214,122,.1)">Action Framework</div>
+      <div class="tm-action-grid">
+        <div class="tm-action"><div class="tm-action-num">ACTION 01</div><div class="tm-action-title">CULTURE JAMMING</div><p class="tm-action-body">Appropriating corporate visual language and subverting its message. Using the tools of power against power. The billboard speaks but says something different.</p></div>
+        <div class="tm-action"><div class="tm-action-num">ACTION 02</div><div class="tm-action-title">DÉTOURNEMENT</div><p class="tm-action-body">Turning the spectacle against itself. Taking existing media — advertisements, logos, broadcasts — and rerouting their meaning toward critique or resistance.</p></div>
+        <div class="tm-action"><div class="tm-action-num">ACTION 03</div><div class="tm-action-title">RADICAL LEGIBILITY</div><p class="tm-action-body">Communication that reaches everyone regardless of literacy level, class, or context. Bold. Simple. Immediate. The message survives a glance at 60mph.</p></div>
+        <div class="tm-action"><div class="tm-action-num">ACTION 04</div><div class="tm-action-title">DEMOCRATIC PRODUCTION</div><p class="tm-action-body">The tools of production must be accessible. Risograph, photocopy, spray paint, free software. Tactical Media refuses the gatekeeping of professional tools.</p></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title" style="color:rgba(45,214,122,.3);border-color:rgba(45,214,122,.1)">Communiqué — The Zine Tradition</div>
+      <div class="tm-zine">
+        <p class="tm-zine-text">
+          <strong>The zine is the original independent media.</strong> Photocopied, stapled, distributed by hand. No editorial board. No advertiser. No algorithm. The tactical designer understands that the means of production shape the message — and chooses their tools deliberately.<br><br>
+          <strong>Design for the street.</strong> The flyer must read at arm's length. The poster must communicate before the eye fully focuses. The sticker must work at thumbnail size on a phone screen. Every medium has its constraints; tactical design weaponises those constraints.<br><br>
+          <strong>Speed is political.</strong> A design that takes three months to produce is useless to a movement that moves in days. Tactical Media celebrates the rough edge of the quickly made — the spray stencil, the photocopied face, the stamp on newsprint.
+        </p>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title" style="color:rgba(45,214,122,.3);border-color:rgba(45,214,122,.1)">Typography — For the Street</div>
+      <div class="type-specimens" style="background:rgba(45,214,122,.05);border-color:rgba(45,214,122,.1)">
+        <div class="type-spec" style="background:#080a08"><div class="type-spec-label" style="color:rgba(45,214,122,.3)">Impact — Syne ExtraBold</div><div style="font-family:var(--font-syne),var(--font-body);font-weight:800;font-size:44px;color:var(--text);line-height:.95;letter-spacing:-.02em">ACT<br>NOW</div><div class="spec-tag" style="color:rgba(45,214,122,.3)">800 Weight — Maximum Legibility — Reads at distance</div></div>
+        <div class="type-spec" style="background:#080a08"><div class="type-spec-label" style="color:rgba(45,214,122,.3)">Warning — Condensed Block</div><div style="font-family:var(--font-display);font-size:36px;color:var(--yellow);letter-spacing:.06em;line-height:1">ATTENTION<br>REQUIRED</div><div class="spec-tag" style="color:rgba(45,214,122,.3)">Bebas Neue — High contrast — Safety signage tradition</div></div>
+        <div class="type-spec" style="background:#080a08"><div class="type-spec-label" style="color:rgba(45,214,122,.3)">Body — Accessible Clarity</div><div style="font-family:var(--font-body);font-size:18px;color:rgba(240,237,232,.6);font-weight:400;line-height:1.6">Clear. Direct. For everyone. The message cannot afford misunderstanding. Ornament is an obstacle.</div><div class="spec-tag" style="color:rgba(45,214,122,.3)">400 Regular — No affectation — Universal access</div></div>
+        <div class="type-spec" style="background:#080a08"><div class="type-spec-label" style="color:rgba(45,214,122,.3)">Stencil — The Physical Mark</div><div style="font-family:var(--font-mono);font-size:18px;color:var(--green);letter-spacing:.2em;line-height:1.6">WE WERE<br>ALWAYS HERE<br>// RESIST //</div><div class="spec-tag" style="color:rgba(45,214,122,.3)">Stencil-cut mono — Spray can — Permanent public mark</div></div>
+      </div>
+    </div>
+    <div class="vl-section reveal">
+      <div class="vl-section-title" style="color:rgba(45,214,122,.3);border-color:rgba(45,214,122,.1)">Design Principles</div>
+      <div class="principles-grid" style="background:rgba(45,214,122,.04);border-color:rgba(45,214,122,.1)">
+        <div class="principle-card" style="background:#080a08"><div class="principle-num" style="color:rgba(45,214,122,.1)">01</div><div class="principle-title">URGENCY FIRST</div><p class="principle-body">When the situation is urgent, the design must communicate urgency. Refinement that delays is refinement that betrays.</p></div>
+        <div class="principle-card" style="background:#080a08"><div class="principle-num" style="color:rgba(45,214,122,.1)">02</div><div class="principle-title">DEMOCRATIC ACCESS</div><p class="principle-body">If the tools required to create or consume the design are not widely available, the design has already failed its political purpose.</p></div>
+        <div class="principle-card" style="background:#080a08"><div class="principle-num" style="color:rgba(45,214,122,.1)">03</div><div class="principle-title">APPROPRIATION</div><p class="principle-body">The existing language of power is a resource. Corporate logos, government fonts, official templates — all material for subversion.</p></div>
+        <div class="principle-card" style="background:#080a08"><div class="principle-num" style="color:rgba(45,214,122,.1)">04</div><div class="principle-title">SPEED OF PRODUCTION</div><p class="principle-body">The stencil and spray can are not limitations but specifications. Design that can be reproduced in minutes by anyone, anywhere.</p></div>
+        <div class="principle-card" style="background:#080a08"><div class="principle-num" style="color:rgba(45,214,122,.1)">05</div><div class="principle-title">MEDIUM AWARENESS</div><p class="principle-body">The sidewalk, the dumpster, the underpass, the bus stop — these are not inferior gallery spaces. They are the target audience.</p></div>
+        <div class="principle-card" style="background:#080a08"><div class="principle-num" style="color:rgba(45,214,122,.1)">06</div><div class="principle-title">NETWORK TACTICS</div><p class="principle-body">Design that spreads itself. The postcard is sent. The sticker travels. The PDF is shared. Virality as political strategy, not accident.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- INTERACTIVE LAB -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="interactive-demo">
+  <div class="demo-header reveal">
+    <h2 class="section-title">THE LAB</h2>
+    <div class="demo-tabs">
+      <button class="demo-tab active" data-tab="glitch">Glitch Engine</button>
+      <button class="demo-tab" data-tab="noise">Noise Compositor</button>
+      <button class="demo-tab" data-tab="manifesto">Manifesto Gen</button>
+    </div>
+  </div>
+  <div class="demo-canvas reveal">
+    <div id="tab-glitch" class="tab-content">
+      <div class="glitch-area">
+        <div class="glitch-text-wrap" id="glitchWrap">
+          <div class="glitch-main" id="glitchText" data-text="CORPORATE">CORPORATE</div>
+        </div>
+        <div class="glitch-controls">
+          <button class="glitch-btn" onclick="cycleGlitchWord()">Cycle Word</button>
+          <button class="glitch-btn" id="btnGlitch" onclick="toggleGlitch()">Trigger Glitch</button>
+          <button class="glitch-btn" id="btnScan" onclick="toggleScan()">Scan Lines</button>
+          <button class="glitch-btn" id="btnInvert" onclick="toggleInvert()">Invert</button>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:.2em;text-transform:uppercase">Hover to glitch — click to hold</div>
+      </div>
+    </div>
+    <div id="tab-noise" class="tab-content" style="display:none">
+      <div class="noise-area">
+        <div class="noise-preview" id="noisePreview">
+          <canvas id="noiseCanvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+          <div style="position:relative;z-index:2;font-family:var(--font-display);font-size:clamp(40px,8vw,80px);color:var(--text);letter-spacing:.04em;mix-blend-mode:difference;user-select:none">TEXTURE</div>
+        </div>
+        <div class="noise-controls-row">
+          <div class="noise-ctrl"><label>Grain Intensity</label><input type="range" id="nGrain" min="0" max="100" value="40"><div class="val" id="nGrainVal">40%</div></div>
+          <div class="noise-ctrl"><label>Frequency Scale</label><input type="range" id="nFreq" min="1" max="10" value="5"><div class="val" id="nFreqVal">5</div></div>
+          <div class="noise-ctrl"><label>Base Contrast</label><input type="range" id="nContrast" min="0" max="100" value="50"><div class="val" id="nContrastVal">50%</div></div>
+        </div>
+      </div>
+    </div>
+    <div id="tab-manifesto" class="tab-content" style="display:none">
+      <div class="manifesto-area">
+        <div class="generated-text" id="genText"></div>
+        <div class="gen-controls">
+          <button class="glitch-btn" onclick="generateManifesto()">Generate Statement</button>
+          <button class="glitch-btn" id="btnTone" onclick="cycleTone()">Tone: Raw</button>
+          <button class="glitch-btn" id="btnSize" onclick="cycleSize()">Length: Medium</button>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:.2em;text-transform:uppercase;margin-top:8px">AI-driven manifesto generation across all aesthetics</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-logo">ÆA</div>
+        <p class="footer-copy">A living digital archive of design aesthetics — seven complete studies, each its own universe. Analytical, evolving, unapologetically precise.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#">Studies Index</a><a href="#">About the Archive</a><a href="#">Methodology</a><a href="#">Submit an Aesthetic</a>
+      </div>
+      <div class="footer-links">
+        <a href="#">Newsletter</a><a href="#">RSS Feed</a><a href="#">Open Source</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 ÆSTHETIC ARCHIVE — ALL 7 STUDIES ACTIVE</span>
+      <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:.15em">BUILT ON THE PRINCIPLE THAT DESIGN IS NEVER INNOCENT</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── CURSOR ──────────────────────────────────────
+const cursor=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+let mX=0,mY=0,rX=0,rY=0;
+document.addEventListener('mousemove',e=>{mX=e.clientX;mY=e.clientY;cursor.style.left=mX+'px';cursor.style.top=mY+'px'});
+(function animRing(){rX+=(mX-rX)*.12;rY+=(mY-rY)*.12;ring.style.left=rX+'px';ring.style.top=rY+'px';requestAnimationFrame(animRing)})();
+document.querySelectorAll('a,button,.aesthetic-card,.upcoming-row,.vs-cell,.db-ornament,.pi-post,.tm-action,.bru-cell,.lim-room,.tl-feature').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover','cursor-link'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover','cursor-link'));
+});
+
+// ── SCROLL PROGRESS ──────────────────────────
+const prog=document.getElementById('progress');
+window.addEventListener('scroll',()=>{prog.style.transform=`scaleX(${window.scrollY/(document.body.scrollHeight-innerHeight)})`;},{passive:true});
+
+// ── NAV ──────────────────────────────────────
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>60),{passive:true});
+const menuBtn=document.getElementById('menuBtn'),mobileNav=document.getElementById('mobileNav');
+let menuOpen=false;
+menuBtn.addEventListener('click',()=>{menuOpen=!menuOpen;menuBtn.classList.toggle('open',menuOpen);mobileNav.classList.toggle('open',menuOpen)});
+document.querySelectorAll('.mob-link').forEach(a=>a.addEventListener('click',()=>{menuOpen=false;menuBtn.classList.remove('open');mobileNav.classList.remove('open')}));
+
+// ── SCROLL TO ─────────────────────────────────
+function scrollTo(id){const el=document.getElementById(id);if(el){el.scrollIntoView({behavior:'smooth',block:'start'})}}
+
+// ── REVEAL ───────────────────────────────────
+const revObs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in-view')}),{threshold:.08,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
+
+// ── INERTIA SCROLL (desktop) ─────────────────
+if(!('ontouchstart' in window)){
+  let curY=0,tgtY=0;
+  window.addEventListener('wheel',e=>{e.preventDefault();tgtY=Math.min(document.body.scrollHeight-innerHeight,Math.max(0,tgtY+e.deltaY*1.15))},{passive:false});
+  window.addEventListener('keydown',e=>{
+    const d={ArrowDown:120,ArrowUp:-120,PageDown:innerHeight,PageUp:-innerHeight};
+    if(d[e.key]){tgtY=Math.min(document.body.scrollHeight-innerHeight,Math.max(0,tgtY+d[e.key]));}
+    if(e.key==='Home')tgtY=0;if(e.key==='End')tgtY=document.body.scrollHeight;
+  });
+  (function loop(){curY+=(tgtY-curY)*.1;if(Math.abs(tgtY-curY)<0.5)curY=tgtY;window.scrollTo(0,curY);requestAnimationFrame(loop)})();
+  document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const el=document.getElementById(a.getAttribute('href').slice(1));if(el){e.preventDefault();tgtY=el.offsetTop-80;}}));
+}
+
+// ── CARD 3D TILT ─────────────────────────────
+document.querySelectorAll('.aesthetic-card').forEach(c=>{
+  c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;c.style.transform=`perspective(600px) rotateY(${x*4}deg) rotateX(${-y*4}deg)`});
+  c.addEventListener('mouseleave',()=>c.style.transform='');
+});
+
+// ── GRAIN SPIKE ON FAST SCROLL ────────────────
+let lastY=0;
+window.addEventListener('scroll',()=>{
+  const v=Math.abs(scrollY-lastY);lastY=scrollY;
+  if(v>60){document.body.style.setProperty('--grain-opacity','.1');setTimeout(()=>document.body.style.setProperty('--grain-opacity','.045'),300);}
+},{passive:true});
+
+// ── PARALLAX ─────────────────────────────────
+window.addEventListener('scroll',()=>{
+  document.querySelector('.hero-glow').style.transform=`scale(${1+scrollY*.0003}) translateY(${scrollY*.1}px)`;
+},{passive:true});
+
+// ═══════════════════════════════════════════
+// CANVAS ART GENERATORS
+// ═══════════════════════════════════════════
+
+// Corporate Grunge
+function drawGrunge(canvas,variant){
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+  ctx.fillStyle='#0d0b09';ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='rgba(240,237,232,.04)';ctx.lineWidth=.5;
+  const gs=variant===0?40:30;
+  for(let x=0;x<w;x+=gs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+  for(let y=0;y<h;y+=gs){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+  const pal=['#0a0a0a','#1a1a1a','#2a2520','#3a3530','#d4431a'];
+  for(let i=0;i<(variant===0?18:8);i++){
+    const bw=Math.random()*w*.4+w*.05,bh=Math.random()*h*.15+h*.02;
+    ctx.fillStyle=pal[Math.floor(Math.random()*pal.length)];
+    ctx.globalAlpha=Math.random()*.6+.2;
+    ctx.fillRect(Math.random()*(w-bw),Math.random()*(h-bh),bw,bh);
+    ctx.globalAlpha=1;
+  }
+  const words=['SYSTEM','FAIL','CORP','DATA','VOID','CTRL','//ERR','ALT','GRUNGE','BREAK'];
+  for(let i=0;i<(variant===0?6:3);i++){
+    const fs=Math.floor(Math.random()*40+14);
+    ctx.font=`bold ${fs}px 'Bebas Neue',sans-serif`;
+    ctx.fillStyle=Math.random()>.7?'#d4431a':'rgba(240,237,232,.15)';
+    ctx.globalAlpha=Math.random()*.5+.2;
+    ctx.fillText(words[Math.floor(Math.random()*words.length)],Math.random()*w*.7,Math.random()*h*.9+h*.05);
+    ctx.globalAlpha=1;
+  }
+  for(let i=0;i<5;i++){
+    ctx.strokeStyle=Math.random()>.8?'#d4431a':'rgba(240,237,232,.06)';
+    ctx.lineWidth=Math.random()*1.5+.3;ctx.globalAlpha=Math.random()*.6+.1;
+    ctx.beginPath();ctx.moveTo(0,Math.random()*h);ctx.lineTo(w,Math.random()*h);ctx.stroke();ctx.globalAlpha=1;
+  }
+  const id=ctx.getImageData(0,0,w,h),d=id.data;
+  for(let i=0;i<d.length;i+=4){const n=(Math.random()-.5)*28;d[i]=Math.min(255,Math.max(0,d[i]+n));d[i+1]=d[i];d[i+2]=d[i];}
+  ctx.putImageData(id,0,0);
+  if(variant===0){ctx.fillStyle='#d4431a';ctx.globalAlpha=.8;ctx.fillRect(0,Math.random()*h*.6+h*.1,w,4);ctx.globalAlpha=1;}
+}
+
+// Baroque Canvas
+function drawBaroque(canvas){
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+  // Deep bg
+  const bg=ctx.createLinearGradient(0,0,w,h);
+  bg.addColorStop(0,'#0d0a14');bg.addColorStop(.5,'#1a0f2e');bg.addColorStop(1,'#0d0a14');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+  // Radial glows
+  const glows=[{x:w*.2,y:h*.3,r:200,c:'rgba(155,89,255,.15)'},{x:w*.7,y:h*.6,r:180,c:'rgba(212,175,122,.1)'},{x:w*.5,y:h*.5,r:250,c:'rgba(255,107,157,.06)'}];
+  glows.forEach(g=>{const rd=ctx.createRadialGradient(g.x,g.y,0,g.x,g.y,g.r);rd.addColorStop(0,g.c);rd.addColorStop(1,'transparent');ctx.fillStyle=rd;ctx.fillRect(0,0,w,h);});
+  // Orbiting rings
+  const cx=w*.5,cy=h*.5;
+  [120,180,240,300].forEach((r,i)=>{
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(155,89,255,${.05+i*.02})`;ctx.lineWidth=.5;ctx.stroke();
+  });
+  // Gold particles
+  for(let i=0;i<80;i++){
+    const px=Math.random()*w,py=Math.random()*h,ps=Math.random()*2+.5;
+    ctx.beginPath();ctx.arc(px,py,ps,0,Math.PI*2);
+    ctx.fillStyle=`rgba(212,175,122,${Math.random()*.4+.1})`;ctx.fill();
+  }
+  // Star pattern
+  for(let i=0;i<12;i++){
+    const a=(i/12)*Math.PI*2,r=80+Math.random()*100;
+    const px=cx+Math.cos(a)*r,py=cy+Math.sin(a)*r;
+    ctx.fillStyle=`rgba(200,162,255,${Math.random()*.3+.1})`;
+    ctx.font='16px serif';ctx.fillText('✦',px,py);
+  }
+  // Noise
+  const id=ctx.getImageData(0,0,w,h),d=id.data;
+  for(let i=0;i<d.length;i+=4){const n=(Math.random()-.5)*15;d[i]=Math.min(255,Math.max(0,d[i]+n));d[i+1]=Math.min(255,Math.max(0,d[i+1]+n));d[i+2]=Math.min(255,Math.max(0,d[i+2]+n));}
+  ctx.putImageData(id,0,0);
+}
+
+// Liminal Space Rooms
+function drawLiminal(canvas,type){
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+  if(type===0){ // Hotel corridor
+    ctx.fillStyle='#1c1a14';ctx.fillRect(0,0,w,h);
+    // Perspective floor
+    ctx.fillStyle='#2a2820';
+    ctx.beginPath();ctx.moveTo(0,h);ctx.lineTo(w,h);ctx.lineTo(w*.65,h*.55);ctx.lineTo(w*.35,h*.55);ctx.closePath();ctx.fill();
+    // Carpet pattern
+    for(let y=h*.55;y<h;y+=20){
+      ctx.strokeStyle=`rgba(180,176,138,.06)`;ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();
+    }
+    // Walls
+    ctx.fillStyle='#241e18';ctx.fillRect(0,0,w*.35,h);
+    ctx.fillStyle='#241e18';ctx.fillRect(w*.65,0,w,h);
+    // Ceiling light strip
+    const lg=ctx.createLinearGradient(w*.35,h*.2,w*.65,h*.2);
+    lg.addColorStop(0,'transparent');lg.addColorStop(.5,'rgba(240,230,180,.12)');lg.addColorStop(1,'transparent');
+    ctx.fillStyle=lg;ctx.fillRect(w*.35,0,w*.3,h*.55);
+    // Doors
+    [h*.45,h*.55,h*.65,h*.72,h*.78].forEach((dh,i)=>{
+      const dx=w*.38+i*.04,dw=.025*w;
+      ctx.fillStyle='rgba(40,36,28,.8)';ctx.fillRect(dx,h*.55-dh*.3,dw,dh*.3);
+      ctx.strokeStyle='rgba(180,160,120,.1)';ctx.lineWidth=.5;ctx.strokeRect(dx,h*.55-dh*.3,dw,dh*.3);
+    });
+    // Fluorescent haze
+    const fhg=ctx.createRadialGradient(w*.5,h*.3,0,w*.5,h*.3,w*.4);
+    fhg.addColorStop(0,'rgba(240,230,180,.08)');fhg.addColorStop(1,'transparent');
+    ctx.fillStyle=fhg;ctx.fillRect(0,0,w,h);
+  } else if(type===1){ // Office
+    ctx.fillStyle='#181818';ctx.fillRect(0,0,w,h);
+    // Ceiling tiles
+    for(let x=0;x<w;x+=40)for(let y=0;y<h*.4;y+=25){ctx.strokeStyle='rgba(200,198,195,.04)';ctx.lineWidth=.5;ctx.strokeRect(x,y,40,25);}
+    // Floor tiles
+    for(let x=0;x<w;x+=36)for(let y=h*.6;y<h;y+=36){
+      ctx.fillStyle=y%72<36?'rgba(200,198,195,.03)':'rgba(200,198,195,.06)';ctx.fillRect(x,y,36,36);
+    }
+    // Monitor glow (abandoned desk)
+    const mg=ctx.createRadialGradient(w*.3,h*.5,0,w*.3,h*.5,80);
+    mg.addColorStop(0,'rgba(100,120,200,.12)');mg.addColorStop(1,'transparent');
+    ctx.fillStyle=mg;ctx.fillRect(0,0,w,h);
+    // Desk silhouette
+    ctx.fillStyle='#111';ctx.fillRect(w*.1,h*.52,w*.35,h*.04);
+    ctx.fillStyle='rgba(80,100,180,.15)';ctx.fillRect(w*.18,h*.35,w*.18,h*.17); // Monitor
+    // Exit sign glow
+    ctx.fillStyle='rgba(255,50,50,.06)';ctx.fillRect(w*.85,h*.05,w*.1,h*.08);
+    ctx.strokeStyle='rgba(255,50,50,.2)';ctx.lineWidth=.5;ctx.strokeRect(w*.85,h*.05,w*.1,h*.08);
+  } else { // Stairwell
+    ctx.fillStyle='#141214';ctx.fillRect(0,0,w,h);
+    // Steps
+    for(let i=0;i<8;i++){
+      const sy=h*.35+i*h*.08,sx=w*.1+i*w*.06;
+      ctx.fillStyle=`rgba(200,198,195,${.04-i*.004})`;
+      ctx.fillRect(sx,sy,w*.8-i*w*.12,h*.015);
+      ctx.fillStyle=`rgba(200,198,195,${.02-i*.002})`;
+      ctx.fillRect(sx+w*.006,sy+h*.015,w*.006,h*.065);
+    }
+    // Railing
+    ctx.strokeStyle='rgba(200,198,195,.08)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(w*.15,h*.35);ctx.lineTo(w*.65,h*.88);ctx.stroke();
+    // Overhead light
+    const ol=ctx.createRadialGradient(w*.5,0,0,w*.5,0,h*.5);
+    ol.addColorStop(0,'rgba(220,215,190,.1)');ol.addColorStop(1,'transparent');
+    ctx.fillStyle=ol;ctx.fillRect(0,0,w,h);
+    // Grille on light
+    for(let x=w*.35;x<w*.65;x+=8){ctx.strokeStyle='rgba(200,198,195,.06)';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h*.06);ctx.stroke();}
+  }
+  // Shared grain
+  const id=ctx.getImageData(0,0,w,h),d=id.data;
+  for(let i=0;i<d.length;i+=4){const n=(Math.random()-.5)*18;d[i]=Math.min(255,Math.max(0,d[i]+n));d[i+1]=Math.min(255,Math.max(0,d[i+1]+n));d[i+2]=Math.min(255,Math.max(0,d[i+2]+n));}
+  ctx.putImageData(id,0,0);
+}
+
+// Noise compositor
+function simplex2D(x,y){const n=Math.sin(x*127.1+y*311.7)*43758.5453;return n-Math.floor(n);}
+function drawNoise(){
+  const canvas=document.getElementById('noiseCanvas');if(!canvas)return;
+  const p=canvas.parentElement;canvas.width=p.offsetWidth||600;canvas.height=p.offsetHeight||240;
+  const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+  const grain=parseInt(document.getElementById('nGrain')?.value||40)/100;
+  const freq=parseInt(document.getElementById('nFreq')?.value||5);
+  const contrast=parseInt(document.getElementById('nContrast')?.value||50)/100;
+  const id=ctx.createImageData(w,h),d=id.data;
+  const sc=freq*.01;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const i=(y*w+x)*4;
+    let v=simplex2D(x*sc,y*sc)*.5+.5;
+    v=Math.pow(v,1-contrast*.5);
+    const base=v*30+(Math.random()-.5)*grain*60;
+    d[i]=d[i+1]=d[i+2]=Math.min(255,Math.max(0,base));d[i+3]=255;
+  }
+  ctx.putImageData(id,0,0);
+}
+function initNoiseCanvas(){
+  drawNoise();
+  ['nGrain','nFreq','nContrast'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener('input',()=>{document.getElementById(id+'Val').textContent=id==='nFreq'?el.value:el.value+'%';drawNoise();});
+  });
+}
+
+// Init all canvases
+window.addEventListener('load',()=>{
+  drawGrunge(document.getElementById('g-main'),0);
+  ['g-sm1','g-sm2','g-sm3','g-sm4'].forEach((id,i)=>drawGrunge(document.getElementById(id),i+1));
+  drawBaroque(document.getElementById('baroque-art'));
+  [0,1,2].forEach(i=>drawLiminal(document.getElementById('lim'+(i+1)),i));
+  generateManifesto();
+  // Hover redraw
+  ['g-main','g-sm1','g-sm2','g-sm3','g-sm4'].forEach((id,i)=>{
+    const c=document.getElementById(id);
+    if(c){let busy=false;c.parentElement.addEventListener('mouseenter',()=>{if(busy)return;busy=true;setTimeout(()=>{drawGrunge(c,i);busy=false;},200);});}
+  });
+  const bc=document.getElementById('baroque-art');
+  if(bc){let bbusy=false;bc.parentElement.addEventListener('mouseenter',()=>{if(bbusy)return;bbusy=true;setTimeout(()=>{drawBaroque(bc);bbusy=false;},300);});}
+});
+
+// ── GLITCH ENGINE ─────────────────────────────
+const glitchWords=['CORPORATE','GRUNGE','CONTROL','SYSTEM','FRACTURE','SIGNAL','ARCHIVE','DECAY','RUPTURE','STATIC'];
+let gIdx=0,glitchOn=false,scanOn=false,invertOn=false;
+function cycleGlitchWord(){
+  gIdx=(gIdx+1)%glitchWords.length;
+  const el=document.getElementById('glitchText');
+  el.textContent=glitchWords[gIdx];el.setAttribute('data-text',glitchWords[gIdx]);
+}
+function toggleGlitch(){glitchOn=!glitchOn;document.getElementById('glitchWrap').classList.toggle('glitch-active',glitchOn);document.getElementById('btnGlitch').classList.toggle('active',glitchOn);}
+function toggleScan(){scanOn=!scanOn;document.getElementById('btnScan').classList.toggle('active',scanOn);const a=document.querySelector('.glitch-area');a.style.backgroundImage=scanOn?'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.15) 2px,rgba(0,0,0,.15) 4px)':'';}
+function toggleInvert(){invertOn=!invertOn;document.getElementById('btnInvert').classList.toggle('active',invertOn);document.querySelector('.demo-canvas').style.filter=invertOn?'invert(1)':'';}
+document.addEventListener('DOMContentLoaded',()=>{
+  const w=document.getElementById('glitchWrap');
+  if(w)w.addEventListener('mouseenter',()=>{if(!glitchOn){w.classList.add('glitch-active');setTimeout(()=>{if(!glitchOn)w.classList.remove('glitch-active');},600);}});
+});
+
+// ── MANIFESTO GENERATOR ───────────────────────
+const MP={
+  raw:{s:['The corporation','The system','Design itself','Capital','The institution','Control'],v:['consumes','manufactures','destroys','commodifies','erases','weaponises'],o:['authenticity','dissent','the margins','subculture','the body','memory'],m:['for profit','without consequence','in plain sight','systemically','by design'],c:['We make it visible.','This archive resists.','We name the mechanism.','Design is the crime scene.']},
+  cerebral:{s:['Aesthetic systems','Visual grammar','Institutional language','Form and function','The surface','Typography'],v:['encodes','mediates','performs','conceals','reveals','negotiates'],o:['power relations','cultural memory','ideological position','social contract','the real','desire'],m:['through formal choices','at the level of style','in the act of looking'],c:['This study makes that legible.','The archive is the argument.','Form is always political.','To look is to be implicated.']},
+  poetic:{s:['The crack in the marble','Rust on the filing cabinet','The xeroxed manifesto','Smudged ink','The broken grid','An empty office'],v:['speaks louder than','outlasts','undoes','haunts','survives','refuses'],o:['the press release','the brand guidelines','the mission statement','the smooth surface'],m:['always','in the end','quietly','persistently'],c:['This is that crack.','Here, we catalogue it.','The archive holds what the brand discards.','Beauty in the breakdown.']},
+  tactical:{s:['Every poster','The stencil','A photocopied flyer','The slogan','Public space','The street'],v:['is a weapon','carries intention','refuses permission','challenges','demands','disrupts'],o:['complacency','the status quo','corporate language','passive consumption','the spectacle'],m:['without apology','immediately','at scale','by design'],c:['Act accordingly.','Design is direct action.','The medium reaches everyone.','The wall is the gallery.']}
+};
+let tone='raw',toneIdx=0,size='medium',sizeIdx=1;
+const tones=['raw','cerebral','poetic','tactical'];
+const sizes=['short','medium','long'];
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function generateManifesto(){
+  const p=MP[tone],el=document.getElementById('genText');if(!el)return;
+  const s1=`${pick(p.s)} ${pick(p.v)} ${pick(p.o)} ${pick(p.m)}.`;
+  const s2=size!=='short'?` ${pick(p.s)} ${pick(p.v)} ${pick(p.o)}.`:'';
+  const s3=size==='long'?` ${pick(p.s)} ${pick(p.v)} ${pick(p.o)} ${pick(p.m)}.`:'';
+  const txt=s1+s2+s3+` ${pick(p.c)}`;
+  el.innerHTML=txt.replace(pick(p.s),`<span class="gen-accent">${pick(p.s)}</span>`);
+  el.style.opacity=0;setTimeout(()=>{el.style.transition='opacity .5s';el.style.opacity=1;},10);
+}
+function cycleTone(){toneIdx=(toneIdx+1)%tones.length;tone=tones[toneIdx];document.getElementById('btnTone').textContent='Tone: '+tone.charAt(0).toUpperCase()+tone.slice(1);generateManifesto();}
+function cycleSize(){sizeIdx=(sizeIdx+1)%sizes.length;size=sizes[sizeIdx];document.getElementById('btnSize').textContent='Length: '+size.charAt(0).toUpperCase()+size.slice(1);generateManifesto();}
+
+// ── DEMO TABS ─────────────────────────────────
+document.querySelectorAll('.demo-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.demo-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');
+    tab.classList.add('active');
+    document.getElementById('tab-'+tab.dataset.tab).style.display='block';
+    if(tab.dataset.tab==='noise')initNoiseCanvas();
+    if(tab.dataset.tab==='manifesto')generateManifesto();
+  });
+});
+</script>
+</body>
+</html>
